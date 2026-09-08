@@ -1,6 +1,6 @@
 'use strict';
 /* LoopBreaker offline brain: cache-first so the app opens with zero signal. */
-var CACHE = 'loopbreaker-v1';
+var CACHE = 'loopbreaker-v6'; // v5 = event detail view + rich event notes
 var ASSETS = [
   './',
   './index.html',

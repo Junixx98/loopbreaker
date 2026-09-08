@@ -226,19 +226,35 @@ body.light .wmap{background:#dfe8f5}
 @keyframes mkping{0%{opacity:.85;transform:scale(.55)}100%{opacity:0;transform:scale(2)}}
 </style>
 <style id="lbSplashCss">
-#lbSplash{position:fixed;left:0;right:0;top:0;bottom:0;z-index:99999;background:#0c0e13;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:lbSA .45s ease 2.9s forwards}
-#lbSplash .lblogo{animation:lbSI .5s ease-out}
-#lbSplash .lbq{margin:26px 26px 0;max-width:640px;text-align:center;font-style:italic;font-size:19px;line-height:1.45;color:#cbd5e1;animation:lbSI .6s ease-out .12s backwards}
-#lbSplash .lbtrack{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);width:220px;max-width:62vw;height:3px;border-radius:2px;background:rgba(148,163,184,.16);overflow:hidden;animation:lbSI .6s ease-out .25s backwards}
-#lbSplash .lbbar{height:100%;width:0;background:#22c55e;border-radius:2px;transition:width .3s ease}
-#lbSplash .lbver{position:absolute;bottom:32px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.14em;color:#475569;animation:lbSI .6s ease-out .3s backwards}
+#lbSplash{position:fixed;left:0;right:0;top:0;bottom:0;z-index:99999;background:#0c0e13;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;animation:lbSA .45s ease 7s forwards}
+#lbSplash .lbGlow{position:absolute;left:0;right:0;top:0;bottom:0;background:radial-gradient(circle at 50% 34%,rgba(34,197,94,.17),transparent 62%)}
+#lbSplash .lbOrbit{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(34,197,94,.10);animation:lbPulse 3.6s ease-in-out infinite alternate}
+#lbSplash .lbO1{width:300px;height:300px}
+#lbSplash .lbO2{width:440px;height:440px;border-color:rgba(34,197,94,.06)}
+#lbSplash .lblogo{position:relative;animation:lbZoom .6s cubic-bezier(.2,.9,.25,1.15) .05s backwards}
+#lbSplash .lbname{position:relative;margin-top:14px;font-size:27px;font-weight:800;letter-spacing:.04em;color:#e2e8f0;animation:lbUp .55s ease .3s backwards}
+#lbSplash .lbname span{color:#22c55e}
+#lbSplash .lbtag{position:relative;margin-top:5px;font-size:13px;color:#94a3b8;animation:lbUp .55s ease .42s backwards}
+#lbSplash .lbq{position:relative;margin:32px 26px 0;max-width:640px;text-align:center;font-style:italic;font-size:20px;line-height:1.5;color:#e2e8f0;animation:lbUp .6s ease .58s backwards}
+#lbSplash .lbq .lbqmark{color:#22c55e;font-size:24px;margin-right:7px;opacity:.85}
+#lbSplash .lbday{position:relative;margin-top:20px;font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:#64748b;animation:lbUp .5s ease 1.2s backwards}
+#lbSplash .lbtrack{position:absolute;left:50%;bottom:70px;transform:translateX(-50%);width:240px;max-width:62vw;height:3px;border-radius:2px;background:rgba(148,163,184,.16);overflow:hidden;animation:lbUp .6s ease 1s backwards}
+#lbSplash .lbbar{height:100%;width:0;background:#22c55e;border-radius:2px;transition:width .45s ease}
+#lbSplash .lbver{position:absolute;bottom:36px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.14em;color:#475569;animation:lbUp .6s ease 1.1s backwards}
 #lbSplash.done{opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s linear;animation:none}
-@keyframes lbSI{from{opacity:0;transform:scale(.93) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+#lbSplash.done *{animation:none}
+@keyframes lbUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes lbPulse{from{transform:translate(-50%,-50%) scale(1)}to{transform:translate(-50%,-50%) scale(1.045)}}
+@keyframes lbZoom{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 @keyframes lbSA{to{opacity:0;visibility:hidden}}
 </style>
+<style id="lbEvCss">.evNoteView{background:var(--card2);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:10px;max-height:38vh;overflow:auto;font-size:14.5px;line-height:1.55;word-wrap:break-word}.evNoteView img{max-width:100%;border-radius:8px}.evNoteView .ntask{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.evNoteView input[type="checkbox"]{accent-color:var(--accent);margin-top:3px}</style>
+<style id="lbCfrmCss">.cfrm{text-align:center;animation:cfrmPop .18s ease}.cfrmIc{font-size:36px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 4px 14px rgba(239,68,68,.35))}.cfrmT{font-weight:800;font-size:17px;margin-top:4px}.cfrmM{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.55;white-space:pre-line;word-wrap:break-word}@keyframes cfrmPop{from{transform:scale(.9) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}</style>
+<style id="lbCal2Css">.day{min-height:86px}.day .num{font-size:11px;opacity:.8}.evchip{display:block;font-size:10.5px;line-height:1.25;font-weight:600;padding:2px 5px;margin-top:3px;border-radius:5px;color:var(--text);cursor:pointer;overflow:hidden;word-break:break-word}</style>
+<style id="lbChartCss">.daychart{width:100%;height:70px;display:block;margin-top:4px}.lgdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}</style>
 </head>
 <body class="dark">
-<div id="lbSplash"><div class="lblogo"><svg viewBox="0 0 100 100" width="118" height="118" xmlns="http://www.w3.org/2000/svg"><path d="M 76.90 47.65 A 27.00 27.00 0 1 1 63.50 26.62" fill="none" stroke="#22c55e" stroke-width="6.20" stroke-linecap="butt"/><path d="M 40.28 66.84 A 19.44 19.44 0 0 1 43.35 31.73" fill="none" stroke="#16a34a" stroke-width="3.10"/><line x1="65.72" y1="53.92" x2="97.16" y2="61.76" stroke="#0c0e13" stroke-width="7.13" stroke-linecap="round"/><line x1="70.30" y1="31.73" x2="81.05" y2="30.60" stroke="#22c55e" stroke-width="5.27" stroke-linecap="round"/><polygon points="86.04,27.48 82.79,36.75 76.29,26.33" fill="#22c55e"/></svg></div><div class="lbq" id="lbSQ">Small steps, every day, forever.</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 2.3</div></div>
+<div id="lbSplash"><div class="lbGlow"></div><div class="lbOrbit lbO1"></div><div class="lbOrbit lbO2"></div><div class="lblogo"><svg viewBox="0 0 100 100" width="132" height="132" xmlns="http://www.w3.org/2000/svg"><rect x="20.60" y="32.85" width="58.80" height="34.30" rx="17.15" fill="none" stroke="#22c55e" stroke-width="10.29"/><polygon points="40.22,24.62 34.56,41.08 59.78,75.38 65.44,58.92" fill="#0c0e13"/><polygon points="55.38,24.62 47.68,41.08 55.38,75.38 47.68,58.92" fill="#0c0e13"/><polygon points="28.39,44.86 34.05,41.08 31.99,49.14" fill="#22c55e"/><polygon points="70.58,57.20 65.44,52.57 67.49,60.63" fill="#22c55e"/><polygon points="50.00,40.20 52.36,47.64 59.80,50.00 52.36,52.36 50.00,59.80 47.64,52.36 40.20,50.00 47.64,47.64" fill="#fbbf24" opacity="0.5"/><polygon points="50.00,44.51 51.32,48.68 55.49,50.00 51.32,51.32 50.00,55.49 48.68,51.32 44.51,50.00 48.68,48.68" fill="#fbbf24"/><circle cx="50.00" cy="50.00" r="1.30" fill="#ffffff" opacity="0.95"/></svg></div><div class="lbname">Loop<span>Breaker</span></div><div class="lbtag">Break the loop, one day at a time.</div><div class="lbq"><span class="lbqmark">❝</span><span id="lbSQ">Small steps, every day, forever.</span></div><div class="lbday" id="lbSDay">today</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 2.7 · offline-ready</div></div>
 <header>
   <h1>Loop<span>Breaker</span> <span class="pcsmall">2.0</span></h1>
   <button class="btn ghost small" id="btnFull" style="margin-left:auto" title="Fullscreen">⛶</button>
@@ -366,8 +382,16 @@ function migrate(){
   if(!S.preChkItems||!S.preChkItems.length)S.preChkItems=JSON.parse(JSON.stringify(def.preChkItems));
   if(!S.openTrades)S.openTrades=[];
   if(!S.budgets)S.budgets={};
+  if(S.countdown){ (S.countdowns=S.countdowns||[]).push({id:(S.countdown.id||uid()),title:(S.countdown.title||'Big day'),date:(S.countdown.date||todayStr())}); S.countdown=null; }
+  if(!Array.isArray(S.countdowns))S.countdowns=[];
+  if(!Array.isArray(S.customCats))S.customCats=[];
+  if(!Array.isArray(S.extraInc))S.extraInc=[];
+  if(!Array.isArray(S.checkSections)||!S.checkSections.length)S.checkSections=[{key:'morning',name:'🌅 Morning'},{key:'afternoon',name:'☀️ Afternoon'},{key:'night',name:'🌙 Night'}];
+  S.checkSections.forEach(function(g){ if(g&&g.key&&!S.checklist[g.key])S.checklist[g.key]=[]; });
+  if(!Array.isArray(S.hiddenCats))S.hiddenCats=[];
+  if(!Array.isArray(S.hiddenInc))S.hiddenInc=[];
 }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){ if(!window._saveWarned){ window._saveWarned=true; setTimeout(function(){ try{ uiToast('⚠️ This window cannot save — data resets on reload. Open the installed/deployed app to keep everything.'); }catch(_){}; },400); } } }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function todayStr(d){ d=d||new Date(); const p=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function fmtPeso(n){ return '₱'+Number(n).toLocaleString('en-PH',{maximumFractionDigits:2}); }
@@ -449,7 +473,7 @@ function renderWidgets(tab,bodies){
   let html='<div style="display:flex;justify-content:flex-end;margin-bottom:8px">'
     +'<button class="wctl" style="font-size:11px;padding:5px 10px" onclick="toggleEdit()">'+(edit?'✓ Done customizing':'✏️ Customize layout')+'</button></div>';
   html+=w.order.map(function(id){
-    const dd=WTABS[tab].find(function(x){return x.id===id;});
+    const dd=WTABS[tab].find(function(x){return x.id===id;})||{id:id,ic:'▫️',t:id};
     const c=w.cfg[id]||{size:'m',col:false,hide:false};
     if(c.hide&&!edit)return '';
     let ctl;
@@ -462,7 +486,7 @@ function renderWidgets(tab,bodies){
     } else {
       ctl='<button class="wctl" data-wact="col" data-i="'+id+'" title="Collapse">'+(c.col?'＋':'－')+'</button>';
     }
-    const body=c.col?'':bodies[id].b();
+    const bd=bodies[id]; const body=(c.col||!bd)?'':bd.b();
     let st='';
     if(c.hide)st+='opacity:.45;';
     if(c.w)st+='width:'+c.w+'px;';
@@ -498,7 +522,7 @@ function renderWidgets(tab,bodies){
   w.order.forEach(function(id){
     const c=w.cfg[id]||{size:'m',col:false,hide:false};
     if(c.col||c.hide)return;
-    if(bodies[id]&&bodies[id].bind)bodies[id].bind();
+    if(bodies[id]&&bodies[id].bind)try{ bodies[id].bind(); }catch(e){ if(window.reportErr)reportErr(e,'bind:'+id); }
   });
 }
 // ================= NAV =================
@@ -529,7 +553,7 @@ window.closeModal=closeModal;
 document.getElementById('modalBg').onclick=function(e){ if(e.target.id==='modalBg')closeModal(); };
 
 // ================= TODAY TAB =================
-function allItems(){ return [...S.checklist.morning,...S.checklist.afternoon,...S.checklist.night]; }
+function allItems(){ var out=[]; secList().forEach(function(g){ var l=S.checklist[g.key]; if(l)out=out.concat(l); }); return out; }
 function itemStreak(id){
   let n=0, d=todayStr();
   if(!(S.done[d]||{})[id]) d=addDays(d,-1);
@@ -569,26 +593,33 @@ function todayBodies(){
       return html;
     }},
     tcd:{ b:function(){
-      if(!S.countdown||!S.countdown.date)
-        return '<span class="muted">No countdown yet. Set a big date — then ask: "What will I have accomplished when this hits zero?"</span>'
-          +'<div class="row"><button class="btn small" id="btnSetCountdown">Set countdown</button></div>';
-      const diff=Math.ceil((new Date(S.countdown.date+'T00:00:00')-new Date(todayStr()+'T00:00:00'))/86400000);
-      return (diff>=0
-        ?'<div class="big" style="color:var(--accent2)">'+diff+' day'+(diff===1?'':'s')+' left</div><div>'+esc(S.countdown.title)+' — <span class="muted">'+S.countdown.date+'</span></div>'
-        :'<div class="big">🎉 '+esc(S.countdown.title)+'</div><div class="muted">Date passed ('+S.countdown.date+'). Set a new one.</div>')
-        +'<div class="row"><button class="btn ghost small" id="btnSetCountdown">Edit</button></div>';
+      var t=todayStr();
+      var cds=(S.countdowns||[]).slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+      if(!cds.length)
+        return '<span class="muted">No countdowns yet. Add big dates \u2014 then ask: "What will I have accomplished when these hit zero?"</span>'
+          +'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
+      var html=cds.map(function(c){
+        var diff=Math.ceil((new Date(c.date+'T00:00:00')-new Date(t+'T00:00:00'))/86400000);
+        var big=diff>=0?('<b style="font-size:26px;color:var(--accent2)">'+diff+'</b> <span class="muted">day'+(diff===1?'':'s')+' left</span>'):'<b style="color:var(--accent)">\u{1F389} passed</b>';
+        return '<div class="list-item">'
+          +'<span style="flex:1;cursor:pointer" data-cded="'+c.id+'">'+big+'<br><b>'+esc(c.title)+'</b> <span class="muted">'+c.date+'</span></span>'
+          +'<button class="x" data-cddel="'+c.id+'">\u00d7</button></div>';
+      }).join('');
+      return html+'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
     }, bind:function(){
-      document.getElementById('btnSetCountdown').onclick=function(){
-        openModal('<h3>🎂 Set countdown</h3>'
-          +'<label class="fl">The big date (e.g. "My 19th birthday")</label><input id="cdT" value="'+esc(S.countdown?S.countdown.title:'')+'">'
-          +'<label class="fl">Date</label><input type="date" id="cdD" value="'+(S.countdown?S.countdown.date:'')+'">'
-          +'<div class="row"><button class="btn" id="cdOk">Save countdown</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
-        document.getElementById('cdOk').onclick=function(){
-          const t2=document.getElementById('cdT').value.trim(), d2=document.getElementById('cdD').value;
-          if(!t2||!d2)return uiToast('Fill in both fields.');
-          S.countdown={title:t2,date:d2}; save(); closeModal(); renderAll(); uiToast('🎂 Countdown set');
-        };
-      };
+      var ab=document.getElementById('btnAddCountdown');
+      if(ab)ab.onclick=function(){ cdEditId=null; cdModal('',''); };
+      document.querySelectorAll('[data-cded]').forEach(function(el){ el.onclick=function(){
+        var c=(S.countdowns||[]).find(function(x){return x.id===el.dataset.cded;}); if(!c)return;
+        cdEditId=c.id; cdModal(c.title,c.date);
+      }; });
+      document.querySelectorAll('[data-cddel]').forEach(function(el){ el.onclick=function(ev){
+        if(ev)ev.stopPropagation();
+        uiConfirm('Delete this countdown?',function(){
+          S.countdowns=(S.countdowns||[]).filter(function(x){return x.id!==el.dataset.cddel;});
+          save(); renderAll();
+        },{icon:'\u23f3',okText:'Delete'});
+      }; });
     }},
     ttime:{ b:function(){
       const wk=(S.timer&&S.timer.work)||25, br=(S.timer&&S.timer.break)||5;
@@ -603,7 +634,7 @@ function todayBodies(){
         +'<div style="display:flex;align-items:flex-end;gap:4px;flex-wrap:wrap"><button class="tbtn" data-tpre="15,3">15/3</button><button class="tbtn" data-tpre="25,5">25/5</button><button class="tbtn" data-tpre="50,10">50/10</button></div></div>'
         +'<div class="muted center" id="pomoCount" style="margin-top:10px"></div>'
         +'<div class="pcsmall" style="margin-top:8px">Focus sessions — last 7 days</div>'
-        +miniBars(last7Labels().map(function(x){return {v:(S.pomo[x.d]||0),l:x.l};}),null,function(v){return v>0?'var(--accent)':'var(--card3)';});
+        +dayChart(last7Labels().map(function(x){return {v:(S.pomo[x.d]||0),l:x.l};}));
     }, bind:function(){
       tDisp();
       const t=todayStr(), c=S.pomo[t]||0;
@@ -679,11 +710,7 @@ function todayBodies(){
         +'<button class="btn danger small" id="btnClearDraft" style="flex:.35">Clear</button></div>'
         +'<div class="pcsmall" style="margin-top:8px">Flow: stamp when you lie down → stamp when you wake → Log. Stamps survive closing the app overnight.</div>'
         +'<div class="pcsmall" style="margin-top:10px">Last 7 nights (hours slept · 🎯 7–8h)</div>'
-        +miniBars(last7Labels().map(function(x){
-            const rec=S.sleep.filter(function(z){return z.date===x.d;});
-            const v=rec.length?Math.round(rec[rec.length-1].hours*10)/10:0;
-            return {v:v,l:x.l};
-          }),12,function(v){ return v>=7?'var(--accent)':(v>0?'var(--warn)':'var(--card3)'); })
+        +sleepChart()
         +'<div style="margin-top:10px">'+info+'</div>';
     }, bind:function(){
       function nowStamp(){ const n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0'); }
@@ -694,9 +721,9 @@ function todayBodies(){
         S.sleepDraft.wake=nowStamp(); buzz(); save(); renderAll();
       };
       document.getElementById('btnClearDraft').onclick=function(){
-        if(!confirm('Clear the current sleep/wake stamps?'))return;
-        S.sleepDraft={bed:null,wake:null}; save(); renderAll();
-      };
+        uiConfirm('Clear the current sleep/wake stamps?',function(){
+S.sleepDraft={bed:null,wake:null}; save(); renderAll();
+});};
       document.getElementById('btnLogSleep').onclick=function(){
         const d=S.sleepDraft||{};
         if(!d.bed||!d.wake)return uiToast('Stamp both times first — 😴 when you sleep, ☀️ when you wake.');
@@ -748,9 +775,9 @@ function todayBodies(){
         save(); renderAll();
       };
       document.querySelectorAll('[data-nbdel]').forEach(function(el){ el.onclick=function(){
-        if(!confirm('Delete this note?'))return;
-        S.notesBoard=S.notesBoard.filter(function(n){return n.id!==el.dataset.nbdel;}); save(); renderAll();
-      }; });
+        uiConfirm('Delete this note?',function(){
+S.notesBoard=S.notesBoard.filter(function(n){return n.id!==el.dataset.nbdel;}); save(); renderAll();
+});}; });
       document.querySelectorAll('[data-nbed]').forEach(function(el){ el.onclick=function(){
         const n=(S.notesBoard||[]).find(function(x){return x.id===el.dataset.nbed;}); if(!n)return;
         openModal('<h3>'+ic('note')+' Edit note</h3>'
@@ -791,16 +818,16 @@ function eventsOn(dateStr){
     if(e.recur==='weekly'&&d.getDay()===b.getDay())list.push(e);
     if(e.recur==='monthly'&&d.getDate()===b.getDate())list.push(e);
   });
-  list.sort(function(a,b){return (a.start||'99').localeCompare(b.start||'99');});
+  list.sort(function(a,b){var x=a.allDay?'':(a.start||'99'),y=b.allDay?'':(b.start||'99');return x<y?-1:x>y?1:0;});
   return list;
 }
 let calCursor=new Date(); calCursor.setDate(1);
 let calMode='month';
-function catDot(cat){ const c=CATS[cat]||CATS.personal; return c; }
+function catDot(cat){ const c=CATS[cat]||customCatFor(cat)||CATS.personal; return c; }
 function chipFor(e){
   const c=catDot(e.cat);
   return '<span class="chip" style="background:'+c[0]+'" title="'+esc(c[1])+(e.start?' · '+e.start:'')+'">'
-    +(e.start?e.start+' ':'')+esc(e.title)+(e.cat==='news'&&e.impact?' '+e.impact:'')+'</span>';
+    +(e.allDay?'':(e.start?e.start+' ':''))+esc(e.title)+(e.cat==='news'&&e.impact?' '+e.impact:'')+'</span>';
 }
 function calBodies(){
   return { calmain:{ b:function(){
@@ -827,7 +854,7 @@ function calBodies(){
         if(comp>0)cls+=' h'+(comp>=1?4:comp>=.75?3:comp>=.5?2:1);
         let chips='';
         if(hol)chips+='<span class="chip" style="background:#ef4444">🇵🇭 '+esc(hol)+'</span>';
-        ev.slice(0,hol?2:3).forEach(function(e){ chips+=chipFor(e); });
+        ev.slice(0,hol?1:2).forEach(function(e){ var cc=catDot(e.cat); chips+='<span class="evchip" onclick="event.stopPropagation();evDetail(\''+e.id+'\',\''+ds+'\')" style="background:'+cc[0]+'29;border-left:3px solid '+cc[0]+'">'+(e.allDay?'☀️ ':(e.start?e.start+' · ':''))+esc(e.title)+'</span>'; });
         const more=(ev.length-(hol?2:3));
         if(more>0)chips+='<span class="chip" style="background:var(--card3);color:var(--muted)">+'+more+' more</span>';
         if(note&&note.mood)chips+='<span class="chip" style="background:transparent;padding:0">'+note.mood+'</span>';
@@ -857,8 +884,8 @@ function calBodies(){
             if(e.end){ const ep=e.end.split(':'); const em=parseInt(ep[0])*60+parseInt(ep[1]); ht=Math.max(20,((em-mins)/60*30)); }
           } else { const idx=eventsOn(ds).filter(function(x){return !x.start;}).indexOf(e); top=2+idx*24; }
           if(top>H-20)return;
-          html+='<div class="wev" style="top:'+top+'px;height:'+Math.min(ht,H-top)+'px;background:'+catDot(e.cat)[0]+'" title="'+esc(e.title)+'">'
-            +(e.start?e.start+' ':'')+esc(e.title)+'</div>';
+          html+='<div class="wev" onclick="event.stopPropagation();evDetail(\''+e.id+'\',\''+ds+'\')" style="cursor:pointer;top:'+top+'px;height:'+Math.min(ht,H-top)+'px;background:'+catDot(e.cat)[0]+'" title="'+esc(e.title)+'">'
+            +(e.allDay||!e.start?'':e.start+' ')+esc(e.title)+'</div>';
         });
         html+='</div>';
       }
@@ -874,7 +901,7 @@ function calBodies(){
     document.querySelectorAll('#tab-cal [data-date]').forEach(function(el){ el.onclick=function(){ openDay(el.dataset.date); }; });
   }}};
 }
-function openDay(dateStr){
+function openDay(dateStr){ window.evPendingNote='';
   const nice=new Date(dateStr+'T00:00:00').toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const ev=eventsOn(dateStr), note=S.notes[dateStr]||{text:'',mood:''}, hol=isHoliday(dateStr);
   const ds=S.done[dateStr]||{}, items=allItems();
@@ -883,8 +910,8 @@ function openDay(dateStr){
   let evHtml=ev.map(function(e){
     const c=catDot(e.cat);
     return '<div class="list-item"><span class="sw" style="background:'+c[0]+'"></span>'
-      +'<span style="flex:1"><b>'+esc(e.title)+'</b> <span class="muted">'+(e.start||'')+(e.end?'–'+e.end:'')+' · '+c[1]+'</span>'
-      +(e.recur?' <span class="badge">'+e.recur+'</span>':'')+(e.cat==='news'&&e.impact?' <span class="badge">'+e.impact+' impact</span>':'')+'</span>'
+      +'<span style="flex:1;cursor:pointer" onclick="evDetail(\''+e.id+'\',\''+dateStr+'\')"><b>'+esc(e.title)+'</b>'+(e.notes?' <span style="font-size:12px">📝</span>':'')+' <span class="muted">'+(e.start||'')+(e.end?'–'+e.end:'')+' · '+c[1]+'</span>'
+      +(e.recur?' <span class="badge">'+e.recur+'</span>':'')+(e.cat==='news'&&e.impact?' <span class="badge">'+e.impact+' impact</span>':'')+' <span class="muted" style="opacity:.6">›</span></span>'
       +'<button class="x" onclick="delEvent2(\''+e.id+'\',\''+dateStr+'\')">×</button></div>';
   }).join('')||'<div class="muted">No events.</div>';
   const moods=['😞','😐','🙂','😄'].map(function(mo){
@@ -896,12 +923,14 @@ function openDay(dateStr){
     +(items.length?'<div class="muted" style="margin-bottom:10px">✅ Routine that day: '+dn+'/'+items.length+' ('+Math.round(dn/items.length*100)+'%)</div>':'')
     +'<div class="section-title">Events / activities</div>'+evHtml
     +'<div class="row"><input type="text" id="evTitle" placeholder="Add event, activity, or news…"></div>'
+    +'<div class="row" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);cursor:pointer"><input type="checkbox" id="evAllDay" style="accent-color:var(--accent);width:17px;height:17px" onchange="var f=this.checked;[\'evStart\',\'evEnd\'].forEach(function(ii){var e2=document.getElementById(ii);e2.disabled=f;e2.style.opacity=f?\'0.35\':\'\';});"> ☀️ Whole day (no time slots)</label></div>'
     +'<div class="row"><div><label class="fl">Start</label><input type="time" id="evStart"></div>'
     +'<div><label class="fl">End</label><input type="time" id="evEnd"></div>'
     +'<div><label class="fl">Category</label>'+mkPick('evCat','Category','CATS','personal','🔵 Personal')+'</div></div>'
     +'<div class="row">'+mkPick('evRecur','Repeats','RECURS','','once')
     +mkPick('evImpact','News impact','IMPACTS','','— impact —')
     +'<button class="btn" onclick="addEvent2(\''+dateStr+'\')" style="flex:.5">Add</button></div>'
+    +'<div class="row"><button class="btn ghost" id="evNoteChip" style="width:100%;text-align:left" onclick="evNoteNew()">📝 Add a note (optional)</button></div>'
     +'<div class="section-title">Notes / journal — mood: '+moods+'</div>'
     +'<textarea id="dayNote" placeholder="What did you do today that your future self will thank you for?">'+esc(note.text)+'</textarea>'
     +'<div class="row"><button class="btn" onclick="saveNote2(\''+dateStr+'\')">Save note</button>'
@@ -912,14 +941,58 @@ window.addEvent2=function(dateStr){
   S.events2.push({id:uid(),date:dateStr,title:v,
     cat:document.getElementById('evCat').value,
     recur:document.getElementById('evRecur').value||null,
-    start:document.getElementById('evStart').value||'',
-    end:document.getElementById('evEnd').value||'',
-    impact:document.getElementById('evImpact').value||''});
-  save(); openDay(dateStr); renderAll();
+    allDay:(document.getElementById('evAllDay')?document.getElementById('evAllDay').checked:false),
+    start:(document.getElementById('evAllDay')&&document.getElementById('evAllDay').checked?'':document.getElementById('evStart').value||''),
+    end:(document.getElementById('evAllDay')&&document.getElementById('evAllDay').checked?'':document.getElementById('evEnd').value||''),
+    impact:document.getElementById('evImpact').value||'',notes:window.evPendingNote||''});
+  window.evPendingNote='';
+  save(); openDay(dateStr); renderAll(); window.uiToast('✅ Event added');
 };
 window.delEvent2=function(id,dateStr){
   S.events2=S.events2.filter(function(e){return e.id!==id;});
   save(); openDay(dateStr); renderAll();
+};
+window.evDetail=function(id,dateStr){
+  var e=(S.events2||[]).find(function(x){return x.id===id;}); if(!e){return;}
+  var c=catDot(e.cat||'personal');
+  var dt=new Date(dateStr+'T00:00:00');
+  var pretty=dt.toLocaleDateString('en',{weekday:'long',month:'short',day:'numeric'});
+  var timeLine=e.allDay?'☀️ Whole day':((e.start||e.end)?((e.start||'')+(e.end?' – '+e.end:'')):'All-day (no time set)');
+  var hasNote=stripHtml(e.notes||'').replace(/&nbsp;|\s/g,'').length>0;
+  openModal('<div style="height:6px;border-radius:6px;background:'+c[0]+';margin-bottom:14px"></div>'
+    +'<h3 style="margin-bottom:2px">'+esc(e.title)+'</h3>'
+    +'<div class="muted" style="margin-bottom:12px">'+pretty+'</div>'
+    +'<div class="list-item"><span>🕐</span><span style="flex:1">'+esc(timeLine)+'</span></div>'
+    +'<div class="list-item"><span>🎨</span><span style="flex:1">'+c[1]+'</span></div>'
+    +(e.recur?'<div class="list-item"><span>🔁</span><span style="flex:1">Repeats: '+esc(e.recur)+'</span></div>':'')
+    +(e.cat==='news'&&e.impact?'<div class="list-item"><span>📰</span><span style="flex:1">Impact: '+esc(e.impact)+'</span></div>':'')
+    +'<div class="section-title">📝 Note</div>'
+    +(hasNote?'<div class="evNoteView">'+e.notes+'</div>':'<div class="muted" style="margin-bottom:10px">No note yet — tap below to attach one with rich text, checklists, colors, like the Notes tab.</div>')
+    +'<div class="row"><button class="btn" onclick="openEventNoteEditor(\''+e.id+'\',\''+dateStr+'\',null)">🗒️ '+(hasNote?'Edit note':'Add note')+'</button>'
+    +'<button class="btn ghost" onclick="openDay(\''+dateStr+'\')">‹ Day</button></div>'
+    +'<div class="row"><button class="btn ghost" style="color:#f87171" onclick="delEvent2(\''+e.id+'\',\''+dateStr+'\')">🗑️ Delete event</button></div>');
+  buzz();
+};
+window.evNoteNew=function(){
+  window.openEventNoteEditor(null,null,function(h){
+    window.evPendingNote=h;
+    var t=document.getElementById('evNoteChip');
+    if(t){ t.textContent=(h&&stripHtml(h).replace(/&nbsp;|\s/g,'').length)?'🗒️ Note attached ✓ — tap to edit':'📝 Add a note (optional)'; }
+  });
+};
+window.openEventNoteEditor=function(evId,dateStr,cb){
+  window.neCtx={evId:evId||null,dateStr:dateStr||null,cb:cb||null};
+  curNoteId=null;
+  var ev=evId?(S.events2||[]).find(function(x){return x.id===evId;}):null;
+  var html=ev?(ev.notes||''):(window.evPendingNote||'');
+  neOpenedAt=new Date();
+  document.getElementById('neBody').innerHTML=html;
+  var ti=document.getElementById('neTitle'); ti.value=''; ti.style.display='none';
+  document.getElementById('neMeta').textContent=(ev?('Note for "'+ev.title.replace(/"/g,'')+'"'):'Note for the new event')+' — same tools as Notes: B I U, sizes, colors, ☑ lists';
+  document.getElementById('nePanel').classList.remove('on');
+  document.getElementById('noteEd').classList.add('on');
+  document.body.style.overflow='hidden';
+  buzz();
 };
 window.saveNote2=function(dateStr){
   if(!S.notes[dateStr])S.notes[dateStr]={text:'',mood:''};
@@ -935,14 +1008,14 @@ window.setMood=function(dateStr,mood){
 function routineBodies(){
   return { rmain:{ b:function(){
     const t=todayStr(), ds=S.done[t]||{};
-    const secs=[['morning','🌅 Morning'],['afternoon','☀️ Afternoon'],['night','🌙 Night']];
+    const secs=secList().map(function(g){ return [g.key,g.name]; });
     let html='';
     const items=allItems(), dn=items.filter(function(i){return ds[i.id];}).length;
     const pct=items.length?Math.round(dn/items.length*100):0;
     html+='<div style="margin-bottom:10px"><span class="muted">'+(items.length?(dn+'/'+items.length+' done · '+pct+'%'):'Add your first habits below')+'</span>'
       +'<div class="bar"><i style="width:'+pct+'%"></i></div></div>';
     html+='<div class="pcsmall" style="margin:10px 0 2px">Routine completion — last 7 days</div>'
-      +miniBars(last7Labels().map(function(x){return {v:Math.round(dayCompletion(x.d)*100),l:x.l};}),100,function(v){return v>=80?'var(--accent)':v>=50?'var(--warn)':(v>0?'var(--danger)':'var(--card3)');});
+      +dayChart(last7Labels().map(function(x){return {v:Math.round(dayCompletion(x.d)*100),l:x.l};}),100);
     secs.forEach(function(pair){
       const key=pair[0], label=pair[1];
       html+='<div class="section-title">'+label+'</div>'
@@ -959,24 +1032,26 @@ function routineBodies(){
       });
       if(!S.checklist[key].length)html+='<div class="muted" style="padding:6px 0">— empty —</div>';
     });
+    html+='<div class="row" style="margin-top:12px"><button class="btn ghost small" id="btnSecMgr">⚙️ Manage routine groups (“work days”, “school days”…)</button></div>';
     html+='<div class="muted" style="margin-top:8px;font-size:12px">Auto-resets daily. Consecutive days = 🔥 streak. Green underline appears on the calendar for every completed day.</div>';
     return html;
   }, bind:function(){
+    var sm=document.getElementById('btnSecMgr'); if(sm)sm.onclick=function(){ secManager(); };
     document.querySelectorAll('[data-tog]').forEach(function(el){ el.onclick=function(){
       const t=todayStr(); if(!S.done[t])S.done[t]={};
       S.done[t][el.dataset.tog]=!S.done[t][el.dataset.tog]; buzz(); save(); renderAll();
     }; });
     document.querySelectorAll('[data-rdel]').forEach(function(el){ el.onclick=function(){
-      if(!confirm('Delete this habit?'))return;
-      S.checklist[el.dataset.rsec]=S.checklist[el.dataset.rsec].filter(function(i){return i.id!==el.dataset.rdel;});
+      uiConfirm('Delete this habit?',function(){
+S.checklist[el.dataset.rsec]=S.checklist[el.dataset.rsec].filter(function(i){return i.id!==el.dataset.rdel;});
       save(); renderAll();
-    }; });
+});}; });
     document.querySelectorAll('[data-radd]').forEach(function(el){ el.onclick=function(){
       const inp=document.getElementById('rin-'+el.dataset.radd);
       const v=inp.value.trim(); if(!v)return;
       S.checklist[el.dataset.radd].push({id:uid(),text:v}); save(); renderAll();
     }; });
-    ['morning','afternoon','night'].forEach(function(k){
+    secList().forEach(function(g){ var k=g.key;
       const inp=document.getElementById('rin-'+k);
       if(inp)inp.onkeydown=function(e){ if(e.key==='Enter'){ const v=inp.value.trim(); if(!v)return; S.checklist[k].push({id:uid(),text:v}); save(); renderAll(); } };
     });
@@ -1029,11 +1104,9 @@ function moneyBodies(){
         +stat('<span class="neg">'+fmtPeso(exp)+'</span>','🧾 Spent · '+mo)
         +stat('<span class="'+(net>=0?'pos':'neg')+'">'+fmtPeso(net)+'</span>','Net')
         +stat(fmtPeso(wsum),'This week')+'</div>'
-        +'<div style="margin-top:12px"><div class="pcsmall">Earned vs spent — this month</div>'
-        +'<div style="display:flex;gap:6px;align-items:center;margin-top:6px"><span class="pcsmall" style="width:52px">Earned</span><div class="bar" style="flex:1;margin-top:0"><i style="width:'+Math.min(100,Math.round(inc/ref*100))+'%"></i></div><b class="pos" style="min-width:74px;text-align:right;font-size:12px">'+fmtPeso(inc)+'</b></div>'
-        +'<div style="display:flex;gap:6px;align-items:center;margin-top:4px"><span class="pcsmall" style="width:52px">Spent</span><div class="bar" style="flex:1;margin-top:0"><i style="width:'+Math.min(100,Math.round(exp/ref*100))+'%;background:'+(exp>inc?'var(--danger)':'var(--warn)')+'"></i></div><b class="neg" style="min-width:74px;text-align:right;font-size:12px">'+fmtPeso(exp)+'</b></div></div>'
-        +(net<0?'<div class="banner" style="margin-top:10px;margin-bottom:0">⚠️ You spent more than you earned this month. Check the budget plan below.</div>':'');
-    }},
+        +msumChart(mo,inc,exp,net)
+    }, bind:function(){}
+    },
     minc:{ b:function(){
       return '<div class="row" style="margin-top:0"><input type="number" id="incAmt" placeholder="Amount ₱" min="0" step="0.01">'
         +mkPick('incSrc','Earning source','INCSRCS','Work/Salary')
@@ -1051,7 +1124,7 @@ function moneyBodies(){
         save(); renderAll();
       };
     }},
-    mexp:{ b:function(){
+        mexp:{ b:function(){
       return '<div class="row" style="margin-top:0"><input type="number" id="expAmt" placeholder="Amount ₱" min="0" step="0.01" style="flex:1.2">'
         +mkPick('expCat','Expense category','EXPCATS','Food')
         +'<button class="btn" id="btnAddExp" style="flex:.7">Add</button></div>'
@@ -1091,13 +1164,13 @@ function moneyBodies(){
       document.querySelectorAll('[data-bdel]').forEach(function(el){
         el.onclick=function(){
           const c=el.dataset.bdel;
-          if(!confirm('Delete the "'+c+'" budget category?\n(Your logged expenses stay — the budget row is removed.)'))return;
-          delete S.budgets[c];
+          uiConfirm('Delete the "'+c+'" budget category?\n(Your logged expenses stay — the budget row is removed.)',function(){
+delete S.budgets[c];
           if(!S.hiddenCats)S.hiddenCats=[];
           S.hiddenCats.push(c);
           S.extraCats=(S.extraCats||[]).filter(function(x){return x!==c;});
           save(); renderAll();
-        };
+});};
       });
       document.getElementById('btnNewCat').onclick=function(){
         const v=document.getElementById('newCat').value.trim(); if(!v)return;
@@ -1463,10 +1536,10 @@ function preChkHtml(prefix){
 }
 function bindPreChk(prefix){
   document.querySelectorAll('[data-pcdel][data-pp="'+prefix+'"]').forEach(function(el){ el.onclick=function(){
-    if(!confirm('Delete this rule?'))return;
-    S.preChkItems=S.preChkItems.filter(function(x){return x.id!==el.dataset.pcdel;});
+    uiConfirm('Delete this rule?',function(){
+S.preChkItems=S.preChkItems.filter(function(x){return x.id!==el.dataset.pcdel;});
     save(); renderAll();
-  }; });
+});}; });
   document.querySelectorAll('[data-pcedit][data-pp="'+prefix+'"]').forEach(function(el){ el.onclick=function(){
     const it=S.preChkItems.find(function(x){return x.id===el.dataset.pcedit;}); if(!it)return;
     uiPrompt('Edit rule:',it.text,function(v){
@@ -1552,9 +1625,9 @@ function tradeBodiesB(){
         save(); renderAll();
       };
       document.querySelectorAll('[data-odel]').forEach(function(el){ el.onclick=function(){
-        if(!confirm('Remove this open trade?'))return;
-        S.openTrades=S.openTrades.filter(function(t){return t.id!==el.dataset.odel;}); save(); renderAll();
-      }; });
+        uiConfirm('Remove this open trade?',function(){
+S.openTrades=S.openTrades.filter(function(t){return t.id!==el.dataset.odel;}); save(); renderAll();
+});}; });
       document.querySelectorAll('[data-close]').forEach(function(el){ el.onclick=function(){
         const t=S.openTrades.find(function(x){return x.id===el.dataset.close;}); if(!t)return;
         closeTradeModal(t);
@@ -1613,9 +1686,9 @@ function tradeBodiesB(){
       }).join('')||'<div class="muted">No trades logged. Journal EVERY demo trade — this is how traders get good.</div>';
     }, bind:function(){
       document.querySelectorAll('[data-tdel]').forEach(function(el){ el.onclick=function(){
-        if(!confirm('Delete this trade?'))return;
-        S.trades=S.trades.filter(function(t){return t.id!==el.dataset.tdel;}); save(); renderAll();
-      }; });
+        uiConfirm('Delete this trade?',function(){
+S.trades=S.trades.filter(function(t){return t.id!==el.dataset.tdel;}); save(); renderAll();
+});}; });
     }},
     tnews:{ b:function(){
       const t=todayStr();
@@ -1652,9 +1725,9 @@ function tradeBodiesB(){
         save(); renderAll();
       };
       document.querySelectorAll('[data-nwdel]').forEach(function(el){ el.onclick=function(){
-        if(!confirm('Delete this news pin?'))return;
-        S.events2=S.events2.filter(function(e){return e.id!==el.dataset.nwdel;}); save(); renderAll();
-      }; });
+        uiConfirm('Delete this news pin?',function(){
+S.events2=S.events2.filter(function(e){return e.id!==el.dataset.nwdel;}); save(); renderAll();
+});}; });
       document.querySelectorAll('[data-nwedit]').forEach(function(el){ el.onclick=function(){
         const ev=S.events2.find(function(e){return e.id===el.dataset.nwedit;}); if(!ev)return;
         uiPrompt('News title:',ev.title,function(nt){
@@ -1666,9 +1739,9 @@ function tradeBodiesB(){
         });
       }; });
       document.querySelectorAll('[data-impdel]').forEach(function(el){ el.onclick=function(){
-        if(!confirm('Remove this impact level? (Existing pins keep their label.)'))return;
-        S.impacts=S.impacts.filter(function(i){return i.id!==el.dataset.impdel;}); save(); renderAll();
-      }; });
+        uiConfirm('Remove this impact level? (Existing pins keep their label.)',function(){
+S.impacts=S.impacts.filter(function(i){return i.id!==el.dataset.impdel;}); save(); renderAll();
+});}; });
       document.querySelectorAll('[data-imped]').forEach(function(el){ el.onclick=function(){
         const i=S.impacts.find(function(x){return x.id===el.dataset.imped;}); if(!i)return;
         uiPrompt('Emoji (e.g. 🟣):',i.emoji,function(ne){
@@ -1707,9 +1780,9 @@ function tradeBodiesB(){
         save(); renderAll();
       };
       document.querySelectorAll('[data-pbdel]').forEach(function(el){ el.onclick=function(){
-        if(!confirm('Delete this setup and its notes/pictures?'))return;
-        S.playbook=S.playbook.filter(function(p){return p.id!==el.dataset.pbdel;}); save(); renderAll();
-      }; });
+        uiConfirm('Delete this setup and its notes/pictures?',function(){
+S.playbook=S.playbook.filter(function(p){return p.id!==el.dataset.pbdel;}); save(); renderAll();
+});}; });
       document.querySelectorAll('[data-pbedit]').forEach(function(el){ el.onclick=function(){
         openPbEditor(el.dataset.pbedit);
       }; });
@@ -1824,19 +1897,19 @@ function moreBodies(){
       if(bf2)bf2.onclick=toggleFull;
       const rl=document.getElementById('btnResetLayout');
       if(rl)rl.onclick=function(){
-        if(!confirm('Reset all widget sizes, order, and visibility back to default?'))return;
-        S.widgets={}; S.editMode=false; save(); renderAll();
-      };
+        uiConfirm('Reset all widget sizes, order, and visibility back to default?',function(){
+S.widgets={}; S.editMode=false; save(); renderAll();
+});};
       document.querySelectorAll('[data-acc]').forEach(function(el){ el.onclick=function(){
         S.accent=el.dataset.acc; save(); applyTheme(); renderAll();
       }; });
       document.getElementById('btnTheme2').onclick=function(){ S.dark=!S.dark; save(); applyTheme(); };
       document.getElementById('btnWipe').onclick=function(){
-        if(!confirm('Erase ALL data? This cannot be undone.'))return;
-        if(!confirm('Really? Trades, journal, habits, budget — everything gone?'))return;
-        localStorage.removeItem(KEY); load(); applyTheme(); renderAll();
+        uiConfirm('Erase ALL data? This cannot be undone.',function(){
+uiConfirm('Really? Trades, journal, habits, budget — everything gone?',function(){
+localStorage.removeItem(KEY); load(); applyTheme(); renderAll();
         uiToast('Clean slate. Day one starts now.');
-      };
+});});};
     }}
   };
 }
@@ -1865,6 +1938,7 @@ function renderReview(days){
     +stat(slAvg?slAvg.toFixed(1)+'h':'—','Avg sleep')+stat(notesN,'Journal notes')
     +stat(tr.length,'Trades')+stat(tr.length?trWr+'%':'—','Win rate')
     +'</div>'
+    +tradeChart(tr)
     +(tr.length?'<div style="margin-top:10px;font-size:14px">Demo P&L: <b class="'+(trNet>=0?'pos':'neg')+'">'+(trNet>0?'+':'')+fmtPeso(trNet)+'</b></div>':'')
     +'<div class="muted" style="margin-top:10px;font-size:12px">'
     +(habPct<80?'Biggest lever: finish your morning routine daily. ':'')
@@ -1872,6 +1946,115 @@ function renderReview(days){
     +(tr.length&&trWr<50?'Trading: win rate under 50% — review the mistake bank before the next session.':'')+'</div>';
 }
 // ================= V2.1 HELPERS: visuals + images + rich text =================
+function dayChart(vals,maxv){
+  var mx=(maxv||0);
+  vals.forEach(function(x){ if(x.v>mx)mx=x.v; });
+  mx=mx||1;
+  var W=320,H=66,pad=6,base=H-16,top=5;
+  var span=Math.max(1,vals.length-1);
+  var pts=vals.map(function(x,i){ var px=pad+i*(W-2*pad)/span; var py=base-(x.v/mx)*(base-top); return [px.toFixed(1),Math.max(top,Math.min(base,py)).toFixed(1)]; });
+  var d=pts.map(function(p,i){return (i?'L':'M')+p[0]+' '+p[1];}).join(' ');
+  var area='';
+  if(pts.length>1)area=d+' L'+pts[pts.length-1][0]+' '+base+' L'+pts[0][0]+' '+base+' Z';
+  return '<svg class="daychart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
+    +'<defs><linearGradient id="dcGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22c55e" stop-opacity="0.30"/><stop offset="1" stop-color="#22c55e" stop-opacity="0"/></linearGradient></defs>'
+    +(area?'<path d="'+area+'" fill="url(#dcGrad)"/>':'')
+    +(pts.length>1?'<path d="'+d+'" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>':'')
+    +pts.map(function(p,i){ return vals[i].v>0?'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.4" fill="#22c55e"/>':''; }).join('')
+    +'</svg>'
+    +'<div style="display:flex;justify-content:space-between;margin-top:2px">'+vals.map(function(x){return '<span class="muted" style="font-size:9.5px">'+esc(x.l)+'</span>';}).join('')+'</div>';
+}
+function sleepChart(){
+  return dayChart(last7Labels().map(function(x){
+    const rec=S.sleep.filter(function(z){return z.date===x.d;});
+    const v=rec.length?Math.round(rec[rec.length-1].hours*10)/10:0;
+    return {v:v,l:x.l};
+  }),12);
+}
+function mlineBuild(mo){
+  var base=new Date(mo+'-01T00:00:00');
+  var y=base.getFullYear(), mm=base.getMonth();
+  var n=new Date(y,mm+1,0).getDate();
+  var t=todayStr();
+  var ci=[],ce=[],ai=0,ae=0;
+  for(var d=1;d<=n;d++){
+    var dss=y+'-'+('0'+(mm+1)).slice(-2)+'-'+('0'+d).slice(-2);
+    var fi=0,fe=0;
+    (S.income||[]).forEach(function(e){ if(e.date===dss)fi+=(+e.amount||0); });
+    (S.expenses||[]).forEach(function(e){ if(e.date===dss)fe+=(+e.amount||0); });
+    ai+=fi; ae+=fe;
+    ci.push(ai); ce.push(ae);
+    if(dss===t)break;
+  }
+  if(ci.length<2){ ci=[0,Math.max(ai,0.01)]; ce=[0,Math.max(ae,0.01)]; }
+  var mx=Math.max(ai,ae,0.01,1);
+  function pathFor(vals){
+    var W=320,H=74,pad=5,bs=H-8,tp=4,span=Math.max(1,vals.length-1);
+    var pts=vals.map(function(v,i){return [(pad+i*(W-2*pad)/span).toFixed(1),(bs-(v/mx)*(bs-tp)).toFixed(1)];});
+    return {pts:pts,d:pts.map(function(p,i){return (i?'L':'M')+p[0]+' '+p[1];}).join(' ')};
+  }
+  var A=pathFor(ci), B=pathFor(ce);
+  var la=A.pts[A.pts.length-1], lb=B.pts[B.pts.length-1];
+  return '<svg class="daychart" style="height:86px" viewBox="0 0 320 74" preserveAspectRatio="none">'
+    +'<path d="'+A.d+'" fill="none" stroke="#22c55e" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>'
+    +'<path d="'+B.d+'" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>'
+    +'<circle cx="'+la[0]+'" cy="'+la[1]+'" r="3" fill="#22c55e"/>'
+    +'<circle cx="'+lb[0]+'" cy="'+lb[1]+'" r="3" fill="#ef4444"/>'
+    +'</svg>';
+}
+function msumChart(mo,inc,exp,net){
+  return mlineBuild(mo)
+    +'<div class="row" style="margin-top:6px;gap:14px;flex-wrap:wrap;justify-content:flex-start">'
+    +'<span class="muted" style="font-size:11.5px"><i class="lgdot" style="background:#22c55e"></i>Earned '+fmtPeso(inc)+'</span>'
+    +'<span class="muted" style="font-size:11.5px"><i class="lgdot" style="background:#ef4444"></i>Spent '+fmtPeso(exp)+'</span>'
+    +'<span class="muted" style="font-size:11.5px">Net: '+(net>=0?'+':'')+fmtPeso(net)+'</span></div>';
+}
+function tradeChart(tr){
+  if(!tr||!tr.length)return '';
+  var c=0;
+  var vals=tr.slice(-15).map(function(x,i){ c+=(+x.result||0); return {v:Math.round(c),l:'#'+(i+1)}; });
+  return '<div class="pcsmall" style="margin-top:12px">Trading P&amp;L trend — last '+vals.length+' trades (cumulative)</div>'+dayChart(vals);
+}
+function secList(){ return (S.checkSections&&S.checkSections.length)?S.checkSections:[{key:'morning',name:'🌅 Morning'},{key:'afternoon',name:'☀️ Afternoon'},{key:'night',name:'🌙 Night'}]; }
+function secManager(){
+  S.checkSections=secList();
+  var rows=S.checkSections.map(function(g,gi){
+    var n=(S.checklist[g.key]||[]).length;
+    return '<div class="list-item"><span style="flex:1">'+esc(g.name)+' <span class="muted">· '+n+' habit'+(n===1?'':'s')+'</span></span>'
+      +'<button class="x" style="font-size:15px" data-sgrn="'+gi+'">✏️</button>'
+      +'<button class="x" data-sgdel="'+gi+'">×</button></div>';
+  }).join('');
+  openModal('<h3>⚙️ Routine groups</h3>'+rows
+    +'<div class="row"><input type="text" id="sgName" placeholder="＋ New group (💼 Work days, 🎒 School days…)…" maxlength="28"><button class="btn small" id="sgAdd">Add</button></div>'
+    +'<div class="muted" style="margin-top:6px;font-size:12px">Groups split your routine by situation — only tick the group that applies today. Renaming or adding keeps every habit and 🔥 streak.</div>'
+    +'<div class="row"><button class="btn ghost" onclick="closeModal()">Done</button></div>');
+  function addSec(){
+    var v=document.getElementById('sgName').value.trim().replace(/["<>]/g,'');
+    if(!v)return uiToast('Name the group first 🙂');
+    var k='g_'+uid();
+    S.checkSections.push({key:k,name:v}); S.checklist[k]=[];
+    save(); closeModal(); renderAll(); secManager(); buzz();
+  }
+  document.getElementById('sgAdd').onclick=addSec;
+  document.getElementById('sgName').onkeydown=function(e){ if(e&&e.key==='Enter')addSec(); };
+  document.querySelectorAll('[data-sgrn]').forEach(function(el){ el.onclick=function(){
+    var g=S.checkSections[+el.dataset.sgrn]; if(!g)return;
+    uiAsk('Rename group',g.name,function(name){
+      name=(name||'').trim().replace(/["<>]/g,''); if(!name)return;
+      g.name=name; save(); closeModal(); renderAll(); secManager(); buzz();
+    });
+  }; });
+  document.querySelectorAll('[data-sgdel]').forEach(function(el){ el.onclick=function(){
+    var gi=+el.dataset.sgdel;
+    if(S.checkSections.length<=1)return uiToast('Keep at least one group 🙂');
+    var g=S.checkSections[gi]; if(!g)return;
+    var n=(S.checklist[g.key]||[]).length;
+    uiConfirm('Delete group "'+g.name+'"'+(n?' — its '+n+' habit'+(n===1?'':'s')+' go too':'')+'?',function(){
+      S.checkSections.splice(gi,1); delete S.checklist[g.key];
+      save(); closeModal(); renderAll(); buzz();
+    },{icon:'⚙️',okText:'Delete'});
+  }; });
+}
 function miniBars(vals,maxv,colors){ // vals:[{v,l}], colors: fn(v)->css color
   const mx=maxv||Math.max.apply(null,vals.map(function(x){return x.v;}))||1;
   return '<div class="miniwrap">'+vals.map(function(x){
@@ -1938,10 +2121,10 @@ window.viewImg=function(kind,id,i){
     +'<button class="btn ghost" onclick="closeModal()">Close</button></div>');
 };
 window.delImg=function(kind,id,i){
-  if(!confirm('Delete this picture?'))return;
-  const rec=imgOwner(kind,id); if(!rec)return;
+  uiConfirm('Delete this picture?',function(){
+const rec=imgOwner(kind,id); if(!rec)return;
   rec.imgs.splice(i,1); save(); closeModal(); renderAll();
-};
+});};
 // ---- rich text playbook editor ----
 window.exec=function(cmd,val){ document.execCommand(cmd,false,val||null); const e=document.getElementById('pbEd'); if(e)e.focus(); };
 window.openPbEditor=function(id){
@@ -1986,22 +2169,151 @@ window.OPT={
   DIRS:['Buy','Sell'],
   EMOS:['Calm','FOMO','Revenge','Fear','Bored','Greedy'],
   GRADES:['A+','A','B','C','Avoid'],
-  INCSRCS:['Work/Salary','Allowance','Side hustle','Gift','Other'],
-  EXPCATS:function(){ return allCats(); },
+  INCSRCS:function(){ var base=['Work/Salary','Allowance','Side hustle','Gift'].filter(function(n){ return (S.hiddenInc||[]).indexOf(n)<0; }).map(function(n){ return {v:n,l:n,custom:'inc_std'}; }); return base.concat((S.extraInc||[]).map(function(n){ return {v:n,l:'★ '+n,custom:'inc'}; })).concat([{v:'__addinc__',l:'＋ Add your own…'}]); },
+  EXPCATS:function(){ var cust=(S.extraCats||[]); var base=allCats().filter(function(x){ return cust.indexOf(x)<0; }).map(function(n){ return {v:n,l:n,custom:'exp_std'}; }); return base.concat(cust.map(function(n){ return {v:n,l:'★ '+n,custom:'exp'}; })).concat([{v:'__addexp__',l:'＋ Add your own…'}]); },
   IMPACTS:function(){ return [{v:'',l:'— no impact —'}].concat((S.impacts||[]).map(function(i){return {v:i.emoji+' '+i.label,l:i.emoji+' '+i.label};})); },
-  CATS:[{v:'personal',l:'🔵 Personal'},{v:'school',l:'🟣 School'},{v:'work',l:'🟠 Work'},{v:'trading',l:'🟢 Trading'},{v:'money',l:'🟡 Money'},{v:'news',l:'🔴 News'}],
+  CATS:function(){ var base=[{v:'personal',l:'🔵 Personal'},{v:'school',l:'🟣 School'},{v:'work',l:'🟠 Work'},{v:'trading',l:'🟢 Trading'},{v:'money',l:'🟡 Money'},{v:'news',l:'🔴 News'}]; (S.customCats||[]).forEach(function(c){ base.push({v:c.id,l:'● '+c.label,custom:'cat'}); }); base.push({v:'__addcat__',l:'＋ New category & color…'}); return base; },
   RECURS:[{v:'',l:'once'},{v:'weekly',l:'every week'},{v:'monthly',l:'every month'},{v:'yearly',l:'every year'}]
 };
+let cdEditId=null;
+function cdModal(tt,dd){
+  openModal('<h3>\u{1F3AF} Countdown</h3>'
+    +'<label class="fl">The big date (e.g. "My 19th birthday")</label><input id="cdT" value="'+esc(tt)+'">'
+    +'<label class="fl">Date</label><input type="date" id="cdD" value="'+esc(dd)+'">'
+    +'<div class="row"><button class="btn" id="cdOk">Save countdown</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
+  document.getElementById('cdOk').onclick=function(){
+    var t2=document.getElementById('cdT').value.trim(), d2=document.getElementById('cdD').value;
+    if(!t2||!d2)return uiToast('Give it a title and a date \u{1F642}');
+    S.countdowns=S.countdowns||[];
+    if(cdEditId){ var c=S.countdowns.find(function(x){return x.id===cdEditId;}); if(c){c.title=t2;c.date=d2;} }
+    else S.countdowns.push({id:uid(),title:t2,date:d2});
+    save(); closeModal(); renderAll(); buzz();
+  };
+}
+window.uiAsk=function(title,ph,cb){
+  var old=document.getElementById('askOverlay'); if(old&&old.parentNode){old.parentNode.removeChild(old);}
+  var ov=document.createElement('div'); ov.className='modal-bg on'; ov.id='askOverlay'; ov.style.zIndex='6400';
+  ov.innerHTML='<div class="modal"><h3>'+esc(title)+'</h3><input type="text" id="askIn" placeholder="'+esc(ph||'')+'" maxlength="60">'
+    +'<div class="row"><button class="btn" id="askOk" style="flex:1">OK</button><button class="btn ghost" id="askNo">Cancel</button></div></div>';
+  document.body.appendChild(ov);
+  var inp=document.getElementById('askIn'); setTimeout(function(){ if(inp&&inp.focus)inp.focus(); },60);
+  var kill=function(){ var p=document.getElementById('askOverlay'); if(p&&p.parentNode){p.parentNode.removeChild(p);} };
+  document.getElementById('askOk').onclick=function(){ var v=inp.value; kill(); cb(v); buzz(); };
+  document.getElementById('askNo').onclick=function(){ kill(); buzz(); };
+  inp.addEventListener('keydown',function(e){ if(e&&e.key==='Enter'){ var v=inp.value; kill(); cb(v); buzz(); } });
+  ov.onclick=function(e){ if(e.target===ov){ kill(); buzz(); } };
+};
+window.pickColor=function(cb){
+  var colors=['#22c55e','#38bdf8','#a78bfa','#fb923c','#fbbf24','#f87171','#f472b6','#2dd4bf','#a3e635','#e2e8f0'];
+  var old=document.getElementById('colorOverlay'); if(old&&old.parentNode){old.parentNode.removeChild(old);}
+  var ov=document.createElement('div'); ov.className='modal-bg on'; ov.id='colorOverlay'; ov.style.zIndex='6600';
+  ov.innerHTML='<div class="modal cfrm"><div class="cfrmIc">\u{1F3A8}</div><div class="cfrmT">Pick a color</div><div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px">'
+    +colors.map(function(c){return '<button class="csw" data-c="'+c+'" style="width:42px;height:42px;border-radius:50%;background:'+c+';border:2px solid rgba(255,255,255,.28);cursor:pointer"></button>';}).join('')
+    +'</div></div>';
+  document.body.appendChild(ov);
+  ov.querySelectorAll('.csw').forEach(function(b){ b.onclick=function(){ var c=b.dataset.c; ov.parentNode.removeChild(ov); buzz(); cb(c); }; });
+  ov.onclick=function(e){ if(e.target===ov){ ov.parentNode.removeChild(ov); buzz(); } };
+};
+function pManage(o,mode){
+  var reopen=function(){ var b=window._lastPickBtn; setTimeout(function(){ if(b)window.pick(b); },10); };
+  if(o.custom==='cat'){
+    var cc=(S.customCats||[]).find(function(x){return x.id===o.v;}); if(!cc)return reopen();
+    if(mode==='rename'){
+      return uiAsk('Rename category',cc.label,function(nm){
+        nm=(nm||'').trim(); if(nm){ cc.label=nm; save(); }
+        reopen();
+      });
+    }
+    return uiConfirm('Remove category "'+cc.label+'"? Its events move to Personal.',function(){
+      S.customCats=S.customCats.filter(function(x){return x.id!==o.v;});
+      (S.events||[]).forEach(function(ev){ if(ev.cat===o.v)ev.cat='personal'; });
+      save(); reopen();
+    },{icon:'🗂️',okText:'Remove'});
+  }
+  var stdExp=o.custom==='exp_std', stdInc=o.custom==='inc_std';
+  if(stdExp||stdInc){
+    var kind=stdExp?'expense category':'earning source';
+    if(mode==='rename'){
+      return uiAsk('Rename "'+o.v+'" ('+kind+')','',function(nm){
+        nm=(nm||'').trim();
+        if(nm&&nm!==o.v){
+          var pool=stdExp?allCats():['Work/Salary','Allowance','Side hustle','Gift'].concat(S.extraInc||[]);
+          if(pool.indexOf(nm)>=0){ uiToast('That name already exists 🙂'); return reopen(); }
+          if(stdExp){
+            S.hiddenCats=(S.hiddenCats||[]).concat([o.v]);
+            S.extraCats=(S.extraCats||[]).concat([nm]);
+            (S.expenses||[]).forEach(function(x){ if(x.cat===o.v)x.cat=nm; });
+            if(S.budgets&&S.budgets[o.v]!=null){ S.budgets[nm]=S.budgets[o.v]; delete S.budgets[o.v]; }
+          }else{
+            S.hiddenInc=(S.hiddenInc||[]).concat([o.v]);
+            S.extraInc=(S.extraInc||[]).concat([nm]);
+            (S.income||[]).forEach(function(x){ if(x.src===o.v)x.src=nm; });
+          }
+          save();
+        }
+        reopen();
+      });
+    }
+    return uiConfirm('Remove "'+o.v+'" from this '+kind+' list? Past entries keep it as text — bring it back anytime with ＋ Add your own…',function(){
+      if(stdExp){ S.hiddenCats=(S.hiddenCats||[]).concat([o.v]); }
+      else{ S.hiddenInc=(S.hiddenInc||[]).concat([o.v]); }
+      save(); reopen();
+    },{icon:'🗂️',okText:'Remove'});
+  }
+  var key=o.custom==='inc'?'extraInc':'extraCats';
+  var list=S[key]||[]; var idx=list.indexOf(o.v);
+  if(idx<0)return reopen();
+  if(mode==='rename'){
+    return uiAsk('Rename "'+o.v+'"','',function(nm){
+      nm=(nm||'').trim();
+      if(nm&&nm!==o.v){
+        list[idx]=nm;
+        if(o.custom==='exp'){
+          (S.expenses||[]).forEach(function(x){ if(x.cat===o.v)x.cat=nm; });
+          if(S.budgets&&S.budgets[o.v]!=null){ S.budgets[nm]=S.budgets[o.v]; delete S.budgets[o.v]; }
+        }else{
+          (S.income||[]).forEach(function(x){ if(x.src===o.v)x.src=nm; });
+        }
+        save();
+      }
+      reopen();
+    });
+  }
+  uiConfirm('Remove "'+o.v+'" from your list? Past entries keep it as text.',function(){
+    list.splice(idx,1); save(); reopen();
+  },{icon:'🗂️',okText:'Remove'});
+}
+function customCatFor(id){ var c=(S.customCats||[]).find(function(x){return x.id===id;}); return c?[c.hex,c.label]:null; }
 window.openPicker=function(title,opts,sel,cb){
   opts=(opts||[]).map(function(o){return typeof o==='object'?o:{v:o,l:String(o)};});
-  openModal('<h3>'+esc(title)+'</h3>'+opts.map(function(o,i){
-    return '<button class="pickopt" data-i="'+i+'"'+(String(o.v)===String(sel)?' style="border-color:var(--accent)"':'')+'>'
-      +esc(o.l)+(String(o.v)===String(sel)?' <span style="color:var(--accent);float:right">✓</span>':'')+'</button>';
-  }).join('')||'<div class="muted">No options.</div>'
-  +'<div class="row"><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
-  document.querySelectorAll('.pickopt').forEach(function(b){ b.onclick=function(){
-    const o=opts[parseInt(b.dataset.i)]; closeModal(); cb(o.v,o.l); buzz();
+  var old=document.getElementById('pickOverlay'); if(old&&old.parentNode){old.parentNode.removeChild(old);}
+  var ov=document.createElement('div');
+  ov.className='modal-bg on'; ov.id='pickOverlay'; ov.style.zIndex='6000';
+  ov.innerHTML='<div class="modal" id="pickBody">'
+    +'<h3>'+esc(title)+'</h3>'
+    +(opts.some(function(o){return o.custom;})?'<div class="muted" style="font-size:11px;margin:-2px 0 8px">✏️ rename · 🗑 remove any item · ★ = made by you</div>':'')
+    +(opts.map(function(o,i){
+      return '<button class="pickopt" data-i="'+i+'"'+(String(o.v)===String(sel)?' style="border-color:var(--accent)"':'')+'>'
+        +esc(o.l)+(o.custom?'<span class="pkAct" data-pkde="'+i+'" style="float:right;margin-left:8px">🗑</span><span class="pkAct" data-pkre="'+i+'" style="float:right;margin-left:10px">✏️</span>':'')+(String(o.v)===String(sel)?' <span style="color:var(--accent);float:right">✓</span>':'')+'</button>';
+    }).join('')||'<div class="muted">No options.</div>')
+    +'<div class="row"><button class="btn ghost" id="pickCancel">Cancel</button></div></div>';
+  document.body.appendChild(ov);
+  var kill=function(){ var p=document.getElementById('pickOverlay'); if(p&&p.parentNode){p.parentNode.removeChild(p);} };
+  ov.querySelectorAll('.pickopt').forEach(function(b){ b.onclick=function(){
+    var o=opts[parseInt(b.dataset.i,10)]; kill(); cb(o.v,o.l); if(window.buzz)buzz();
   }; });
+  ov.querySelectorAll('[data-pkre]').forEach(function(b){ b.onclick=function(e){
+    if(e)e.stopPropagation();
+    if(window.buzz)buzz();
+    var o=opts[parseInt(b.dataset.pkre,10)]; if(o)pManage(o,'rename');
+  }; });
+  ov.querySelectorAll('[data-pkde]').forEach(function(b){ b.onclick=function(e){
+    if(e)e.stopPropagation();
+    if(window.buzz)buzz();
+    var o=opts[parseInt(b.dataset.pkde,10)]; if(o)pManage(o,'remove');
+  }; });
+  ov.onclick=function(e){ if(e.target===ov){ kill(); if(window.buzz)buzz(); } };
+  document.getElementById('pickCancel').onclick=function(){ kill(); if(window.buzz)buzz(); };
 };
 function mkPick(id,title,optsKey,defV,defLabel){
   return '<input type="hidden" id="'+id+'" value="'+esc(defV)+'">'
@@ -2009,11 +2321,44 @@ function mkPick(id,title,optsKey,defV,defLabel){
     +'<span>'+esc(defLabel==null?defV:defLabel)+'</span><span style="opacity:.55">▾</span></button>';
 }
 window.pick=function(btn){
+  window._lastPickBtn=btn;
   let o=window.OPT[btn.dataset.opts];
   if(typeof o==='function')o=o();
   o=(o||[]).map(function(x){return typeof x==='object'?x:{v:x,l:String(x)};});
   const hid=document.getElementById(btn.dataset.for);
   openPicker(btn.dataset.title,o,hid?hid.value:'',function(v,l){
+    if(v==='__addcat__'){
+      return uiAsk('New category name','e.g. Gym, Family, Church…',function(name){
+        name=(name||'').trim(); if(!name)return;
+        pickColor(function(hex){
+          const id='uc_'+uid();
+          S.customCats=S.customCats||[]; S.customCats.push({id:id,hex:hex,label:name}); save();
+          if(hid)hid.value=id;
+          btn.innerHTML='<span>'+esc('● '+name)+'</span><span style="opacity:.55">▾</span>';
+          buzz();
+        });
+      });
+    }
+    if(v==='__addexp__'){
+      return uiAsk('New expense category','e.g. Rent, Gadgets, Tuition…',function(name){
+        name=(name||'').trim(); if(!name)return;
+        S.extraCats=S.extraCats||[]; if(S.extraCats.indexOf(name)<0)S.extraCats.push(name);
+        if(S.hiddenCats)S.hiddenCats=S.hiddenCats.filter(function(x){return x!==name;});
+        save(); if(hid)hid.value=name;
+        btn.innerHTML='<span>'+esc(name)+'</span><span style="opacity:.55">▾</span>';
+        buzz();
+      });
+    }
+    if(v==='__addinc__'){
+      return uiAsk('New earning source','e.g. Freelance, Commissions…',function(name){
+        name=(name||'').trim(); if(!name)return;
+        S.extraInc=S.extraInc||[]; if(S.extraInc.indexOf(name)<0)S.extraInc.push(name);
+        if(S.hiddenInc)S.hiddenInc=S.hiddenInc.filter(function(x){return x!==name;});
+        save(); if(hid)hid.value=name;
+        btn.innerHTML='<span>'+esc(name)+'</span><span style="opacity:.55">▾</span>';
+        buzz();
+      });
+    }
     if(hid)hid.value=v;
     btn.innerHTML='<span>'+esc(l)+'</span><span style="opacity:.55">▾</span>';
   });
@@ -2024,6 +2369,27 @@ window.uiToast=function(msg){
   if(!t){ t=document.createElement('div'); t.id='uiToast'; document.body.appendChild(t); }
   t.textContent=msg; t.classList.add('show');
   clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('show'); },2600);
+};
+window.uiConfirm=function(msg,cb,opts){
+  opts=opts||{};
+  var ic=opts.icon, ok=opts.okText, danger=opts.danger!==false;
+  var m0=String(msg).split(' ')[0].toLowerCase();
+  if(!ic){ ic=(m0==='erase'||m0==='really')?'⚠️':(m0==='reset'?'↺':(m0==='clear'?'🧹':(m0==='remove'?'🗑️':'🗑️'))); }
+  if(!ok){ ok=(m0==='erase'?'Erase':(m0==='reset'?'↺ Reset':(m0==='clear'?'Clear':(m0==='remove'?'Remove':'Delete')))); }
+  var old=document.getElementById('cfrmOverlay'); if(old&&old.parentNode){old.parentNode.removeChild(old);}
+  var ov=document.createElement('div'); ov.className='modal-bg on'; ov.id='cfrmOverlay'; ov.style.zIndex='6500';
+  ov.innerHTML='<div class="modal cfrm">'
+    +'<div class="cfrmIc">'+ic+'</div>'
+    +'<div class="cfrmT">'+(opts.title||(danger?'Are you sure?':'Heads up'))+'</div>'
+    +'<div class="cfrmM">'+esc(String(msg))+'</div>'
+    +'<div class="row" style="margin-top:16px"><button class="btn ghost" id="cfrmNo" style="flex:1">Cancel</button>'
+    +'<button class="btn" id="cfrmYes" style="flex:1;'+(danger?'background:linear-gradient(135deg,#ef4444,#f97316);border:none;box-shadow:0 6px 18px rgba(239,68,68,.35)':'')+'">'+ok+'</button></div></div>';
+  document.body.appendChild(ov);
+  var kill=function(){ var p=document.getElementById('pickOverlay')||document.getElementById('cfrmOverlay'); };
+  kill=function(){ var p=document.getElementById('cfrmOverlay'); if(p&&p.parentNode){p.parentNode.removeChild(p);} };
+  document.getElementById('cfrmNo').onclick=function(){ kill(); buzz(); };
+  document.getElementById('cfrmYes').onclick=function(){ kill(); buzz(); cb(); };
+  ov.onclick=function(e){ if(e.target===ov){ kill(); buzz(); } };
 };
 window.uiPrompt=function(title,def,cb){
   openModal('<h3>'+esc(title)+'</h3><input type="text" id="uiPIn" value="'+esc(def==null?'':def)+'">'
@@ -2082,14 +2448,14 @@ function notesBodies(){
     }; });
     document.querySelectorAll('[data-ndel]').forEach(function(el){ el.onclick=function(ev){
       ev.stopPropagation();
-      if(!confirm('Delete this note?'))return;
-      S.notesBoard=S.notesBoard.filter(function(n){return n.id!==el.dataset.ndel;});
+      uiConfirm('Delete this note?',function(){
+S.notesBoard=S.notesBoard.filter(function(n){return n.id!==el.dataset.ndel;});
       save(); renderAll(); window.uiToast('Note deleted');
-    }; });
+});}; });
   }}};
 }
 window.openNoteEditor=function(id){
-  curNoteId=id||null;
+  curNoteId=id||null; window.neCtx=null;
   const n=id?(S.notesBoard||[]).find(function(x){return x.id===id;}):null;
   neOpenedAt=new Date();
   document.getElementById('neTitle').value=n?n.title:'';
@@ -2101,6 +2467,7 @@ window.openNoteEditor=function(id){
   buzz();
 };
 window.closeNoteEditor=function(){
+  window.neCtx=null; document.getElementById('neTitle').style.display='';
   document.getElementById('noteEd').classList.remove('on');
   document.body.style.overflow='';
   renderAll();
@@ -2121,6 +2488,9 @@ window.saveNoteEd=function(){
     if(c.checked)c.setAttribute('checked',''); else c.removeAttribute('checked');
   });
   const html=ed.innerHTML;
+  if(window.neCtx){ var _c=window.neCtx; window.neCtx=null; document.getElementById('neTitle').style.display='';
+    if(_c.evId){ var _e=(S.events2||[]).find(function(x){return x.id===_c.evId;}); if(_e){_e.notes=html;} save(); window.closeNoteEditor(); window.uiToast('🗒️ Event note saved'); buzz(); if(_c.dateStr)evDetail(_c.evId,_c.dateStr); return; }
+    if(_c.cb){ var _cb=_c.cb; window.closeNoteEditor(); _cb(html); buzz(); return; } }
   if(!S.notesBoard)S.notesBoard=[];
   if(curNoteId){
     const n=S.notesBoard.find(function(x){return x.id===curNoteId;});
@@ -2201,7 +2571,8 @@ function boot(){
   document.querySelectorAll('[data-nc]').forEach(function(b){ b.onclick=function(){ setFontColor(b.dataset.nc,b); }; });
 })();
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB2.2 ready';
+  if(mark)mark.textContent='\u2713 LB2.7 ready';
+  try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
 let curDay=todayStr();
@@ -2213,15 +2584,20 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
   var box=document.getElementById('lbSplash'); if(!box){return;}
   var q=document.getElementById('lbSQ');
   var bar=document.getElementById('lbSB');
+  var dayEl=document.getElementById('lbSDay');
   var last=-1;
   try{ last=parseInt(localStorage.getItem('lb_lastQ')||'-1',10); if(isNaN(last)){last=-1;} }catch(e){}
   var i=Math.floor(Math.random()*QUOTES.length);
   if(QUOTES.length>1 && i===last){ i=(i+1)%QUOTES.length; }
   try{ localStorage.setItem('lb_lastQ',''+i); }catch(e){}
   if(q){ q.textContent=QUOTES[i]; }
-  var t0=(new Date()).getTime();
-  var steps=[28,52,74,88], pi=0;
-  var pt=setInterval(function(){ if(pi<steps.length && bar && !box.getAttribute('data-done')){ bar.style.width=steps[pi]+'%'; pi++; } },370);
+  var D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var M=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var now=new Date();
+  if(dayEl){ dayEl.textContent=D[now.getDay()]+' · '+M[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear()+' — day on deck'; }
+  var t0=now.getTime();
+  var steps=[14,30,46,60,72,82,90], pi=0;
+  var pt=setInterval(function(){ if(pi<steps.length && bar && !box.getAttribute('data-done')){ bar.style.width=steps[pi]+'%'; pi++; } },620);
   var iv=null, n=0;
   function hide(fast){
     if(box.getAttribute('data-done')){ return; }
@@ -2229,10 +2605,10 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
     if(iv){ clearInterval(iv); }
     clearInterval(pt);
     var dt=(new Date()).getTime()-t0;
-    var wait=fast?0:(dt<1000?(1000-dt):0);
+    var wait=fast?0:(dt<4000?(4000-dt):0);
     setTimeout(function(){
       if(bar){ bar.style.width='100%'; }
-      setTimeout(function(){ if(box.className.indexOf('done')<0){ box.className=box.className+' done'; } }, fast?60:240);
+      setTimeout(function(){ if(box.className.indexOf('done')<0){ box.className=box.className+' done'; } }, fast?60:300);
     }, wait);
   }
   iv=setInterval(function(){
@@ -2240,7 +2616,7 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
     var m=document.getElementById('integrityMark');
     var ready=m && m.textContent && m.textContent.indexOf('\u2713')===0;
     if(ready){ hide(false); }
-    else if(n>38){ hide(false); }
+    else if(n>90){ hide(false); }
   },60);
   if(box.addEventListener){ box.addEventListener('click',function(){ hide(true); }); }
 })();
