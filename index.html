@@ -225,8 +225,20 @@ body.light .wmap{background:#dfe8f5}
 .mkring{transform-box:fill-box;transform-origin:center;animation:mkping 2s ease-out infinite}
 @keyframes mkping{0%{opacity:.85;transform:scale(.55)}100%{opacity:0;transform:scale(2)}}
 </style>
+<style id="lbSplashCss">
+#lbSplash{position:fixed;left:0;right:0;top:0;bottom:0;z-index:99999;background:#0c0e13;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:lbSA .45s ease 2.9s forwards}
+#lbSplash .lblogo{animation:lbSI .5s ease-out}
+#lbSplash .lbq{margin:26px 26px 0;max-width:640px;text-align:center;font-style:italic;font-size:19px;line-height:1.45;color:#cbd5e1;animation:lbSI .6s ease-out .12s backwards}
+#lbSplash .lbtrack{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);width:220px;max-width:62vw;height:3px;border-radius:2px;background:rgba(148,163,184,.16);overflow:hidden;animation:lbSI .6s ease-out .25s backwards}
+#lbSplash .lbbar{height:100%;width:0;background:#22c55e;border-radius:2px;transition:width .3s ease}
+#lbSplash .lbver{position:absolute;bottom:32px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.14em;color:#475569;animation:lbSI .6s ease-out .3s backwards}
+#lbSplash.done{opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s linear;animation:none}
+@keyframes lbSI{from{opacity:0;transform:scale(.93) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes lbSA{to{opacity:0;visibility:hidden}}
+</style>
 </head>
 <body class="dark">
+<div id="lbSplash"><div class="lblogo"><svg viewBox="0 0 100 100" width="118" height="118" xmlns="http://www.w3.org/2000/svg"><path d="M 76.90 47.65 A 27.00 27.00 0 1 1 63.50 26.62" fill="none" stroke="#22c55e" stroke-width="6.20" stroke-linecap="butt"/><path d="M 40.28 66.84 A 19.44 19.44 0 0 1 43.35 31.73" fill="none" stroke="#16a34a" stroke-width="3.10"/><line x1="65.72" y1="53.92" x2="97.16" y2="61.76" stroke="#0c0e13" stroke-width="7.13" stroke-linecap="round"/><line x1="70.30" y1="31.73" x2="81.05" y2="30.60" stroke="#22c55e" stroke-width="5.27" stroke-linecap="round"/><polygon points="86.04,27.48 82.79,36.75 76.29,26.33" fill="#22c55e"/></svg></div><div class="lbq" id="lbSQ">Small steps, every day, forever.</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 2.3</div></div>
 <header>
   <h1>Loop<span>Breaker</span> <span class="pcsmall">2.0</span></h1>
   <button class="btn ghost small" id="btnFull" style="margin-left:auto" title="Fullscreen">⛶</button>
@@ -2194,6 +2206,44 @@ function boot(){
 try{ boot(); }catch(e){ showFatal(e.message); }
 let curDay=todayStr();
 setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderAll(); } }catch(e){ showFatal(e.message); } },30000);
+</script>
+<script>
+;(function(){
+  var QUOTES=["Small steps, every day, forever.","One good day. Then another.","Discipline is choosing what you want most over what you want now.","Show up first. Motivation follows action.","No zero days.","You fall to the level of your systems.","The market pays the patient.","Protect the streak. Protect the capital.","Boredom is the price of consistency.","Slow is smooth. Smooth is fast.","Compound interest applies to habits too.","Your future self is watching today's choices.","Win the morning, win the day.","The loop breaks today, or it doesn't.","I am becoming a disciplined forex trader."];
+  var box=document.getElementById('lbSplash'); if(!box){return;}
+  var q=document.getElementById('lbSQ');
+  var bar=document.getElementById('lbSB');
+  var last=-1;
+  try{ last=parseInt(localStorage.getItem('lb_lastQ')||'-1',10); if(isNaN(last)){last=-1;} }catch(e){}
+  var i=Math.floor(Math.random()*QUOTES.length);
+  if(QUOTES.length>1 && i===last){ i=(i+1)%QUOTES.length; }
+  try{ localStorage.setItem('lb_lastQ',''+i); }catch(e){}
+  if(q){ q.textContent=QUOTES[i]; }
+  var t0=(new Date()).getTime();
+  var steps=[28,52,74,88], pi=0;
+  var pt=setInterval(function(){ if(pi<steps.length && bar && !box.getAttribute('data-done')){ bar.style.width=steps[pi]+'%'; pi++; } },370);
+  var iv=null, n=0;
+  function hide(fast){
+    if(box.getAttribute('data-done')){ return; }
+    box.setAttribute('data-done','1');
+    if(iv){ clearInterval(iv); }
+    clearInterval(pt);
+    var dt=(new Date()).getTime()-t0;
+    var wait=fast?0:(dt<1000?(1000-dt):0);
+    setTimeout(function(){
+      if(bar){ bar.style.width='100%'; }
+      setTimeout(function(){ if(box.className.indexOf('done')<0){ box.className=box.className+' done'; } }, fast?60:240);
+    }, wait);
+  }
+  iv=setInterval(function(){
+    n++;
+    var m=document.getElementById('integrityMark');
+    var ready=m && m.textContent && m.textContent.indexOf('\u2713')===0;
+    if(ready){ hide(false); }
+    else if(n>38){ hide(false); }
+  },60);
+  if(box.addEventListener){ box.addEventListener('click',function(){ hide(true); }); }
+})();
 </script>
 </body>
 </html>
