@@ -254,7 +254,7 @@ body.light .wmap{background:#dfe8f5}
 <style id="lbChartCss">.daychart{width:100%;height:70px;display:block;margin-top:4px}.lgdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}</style>
 </head>
 <body class="dark">
-<div id="lbSplash"><div class="lbGlow"></div><div class="lbOrbit lbO1"></div><div class="lbOrbit lbO2"></div><div class="lblogo"><svg viewBox="0 0 100 100" width="132" height="132" xmlns="http://www.w3.org/2000/svg"><rect x="20.60" y="32.85" width="58.80" height="34.30" rx="17.15" fill="none" stroke="#22c55e" stroke-width="10.29"/><polygon points="40.22,24.62 34.56,41.08 59.78,75.38 65.44,58.92" fill="#0c0e13"/><polygon points="55.38,24.62 47.68,41.08 55.38,75.38 47.68,58.92" fill="#0c0e13"/><polygon points="28.39,44.86 34.05,41.08 31.99,49.14" fill="#22c55e"/><polygon points="70.58,57.20 65.44,52.57 67.49,60.63" fill="#22c55e"/><polygon points="50.00,40.20 52.36,47.64 59.80,50.00 52.36,52.36 50.00,59.80 47.64,52.36 40.20,50.00 47.64,47.64" fill="#fbbf24" opacity="0.5"/><polygon points="50.00,44.51 51.32,48.68 55.49,50.00 51.32,51.32 50.00,55.49 48.68,51.32 44.51,50.00 48.68,48.68" fill="#fbbf24"/><circle cx="50.00" cy="50.00" r="1.30" fill="#ffffff" opacity="0.95"/></svg></div><div class="lbname">Loop<span>Breaker</span></div><div class="lbtag">Break the loop, one day at a time.</div><div class="lbq"><span class="lbqmark">❝</span><span id="lbSQ">Small steps, every day, forever.</span></div><div class="lbday" id="lbSDay">today</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 2.7 · offline-ready</div></div>
+<div id="lbSplash"><div class="lbGlow"></div><div class="lbOrbit lbO1"></div><div class="lbOrbit lbO2"></div><div class="lblogo"><svg viewBox="0 0 100 100" width="132" height="132" xmlns="http://www.w3.org/2000/svg"><rect x="20.60" y="32.85" width="58.80" height="34.30" rx="17.15" fill="none" stroke="#22c55e" stroke-width="10.29"/><polygon points="40.22,24.62 34.56,41.08 59.78,75.38 65.44,58.92" fill="#0c0e13"/><polygon points="55.38,24.62 47.68,41.08 55.38,75.38 47.68,58.92" fill="#0c0e13"/><polygon points="28.39,44.86 34.05,41.08 31.99,49.14" fill="#22c55e"/><polygon points="70.58,57.20 65.44,52.57 67.49,60.63" fill="#22c55e"/><polygon points="50.00,40.20 52.36,47.64 59.80,50.00 52.36,52.36 50.00,59.80 47.64,52.36 40.20,50.00 47.64,47.64" fill="#fbbf24" opacity="0.5"/><polygon points="50.00,44.51 51.32,48.68 55.49,50.00 51.32,51.32 50.00,55.49 48.68,51.32 44.51,50.00 48.68,48.68" fill="#fbbf24"/><circle cx="50.00" cy="50.00" r="1.30" fill="#ffffff" opacity="0.95"/></svg></div><div class="lbname">Loop<span>Breaker</span></div><div class="lbtag">Break the loop, one day at a time.</div><div class="lbq"><span class="lbqmark">❝</span><span id="lbSQ">Small steps, every day, forever.</span></div><div class="lbday" id="lbSDay">today</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 2.8 · offline-ready</div></div>
 <header>
   <h1>Loop<span>Breaker</span> <span class="pcsmall">2.0</span></h1>
   <button class="btn ghost small" id="btnFull" style="margin-left:auto" title="Fullscreen">⛶</button>
@@ -2571,7 +2571,7 @@ function boot(){
   document.querySelectorAll('[data-nc]').forEach(function(b){ b.onclick=function(){ setFontColor(b.dataset.nc,b); }; });
 })();
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB2.7 ready';
+  if(mark)mark.textContent='\u2713 LB2.8 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -2621,5 +2621,303 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
   if(box.addEventListener){ box.addEventListener('click',function(){ hide(true); }); }
 })();
 </script>
+
+
+<script>
+// ============ LB2.8 CLOUD SYNC (GitHub private repo) ============
+(function(){
+'use strict';
+var SK='loopbreaker_sync';
+var cfg={on:false,owner:'',repo:'',path:'sync.json',token:'',dev:''};
+var st={busy:false,remoteSha:null,remoteSavedAt:0,remoteDev:'',lastSync:0,pending:false,warned:false,pushT:null,intv:null,lastRemoteSig:null,lastPushSig:null};
+var silent=false; // true while saving changes that CAME from the cloud (echo guard)
+try{ var raw=localStorage.getItem(SK); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object')cfg=Object.assign(cfg,p); } }catch(e){}
+function saveCfg(){ try{ localStorage.setItem(SK,JSON.stringify(cfg)); }catch(e){} }
+function b64e(s){ return btoa(unescape(encodeURIComponent(s))); }
+function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/\n/g,'')))); }
+function apiURL(){ return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+encodeURIComponent(cfg.path||'sync.json'); }
+function ready(){ return !!(cfg.on&&cfg.owner&&cfg.repo&&cfg.token); }
+function toast(m){ try{ window.uiToast(m); }catch(e){} }
+
+// ---- per-section change stamps (merged into S._kt, travels with the cloud copy) ----
+var _snap={};
+function stampSections(){
+  if(!S||typeof S!=='object')return 0;
+  if(!S._kt||typeof S._kt!=='object'||Array.isArray(S._kt))S._kt={};
+  var now=Date.now(),n=0;
+  for(var k in S){ if(k==='_kt')continue;
+    if(typeof S[k]==='function')continue;
+    var j; try{ j=JSON.stringify(S[k]); }catch(e){ continue; }
+    if(_snap[k]!==undefined&&_snap[k]!==j){ S._kt[k]=now; n++; }
+    _snap[k]=j;
+  }
+  return n;
+}
+// ---- wrap save(): stamp -> original save -> queue push only when something actually changed ----
+if(typeof window.save==='function'&&!window.save.__lbSync){
+  var _origSave=window.save;
+  var patched=function(){ var n=stampSections(); _origSave(); if(ready()&&n>0&&!silent)queuePush(); };
+  patched.__lbSync=true; try{ window.save=patched; }catch(e){}
+}
+// ---- wrap renderAll(): re-attach the sync card after each tab render ----
+if(typeof window.renderAll==='function'&&!window.renderAll.__lbSync){
+  var _origR=window.renderAll;
+  var patchedR=function(){ _origR.apply(this,arguments); try{ card(); }catch(e){} };
+  patchedR.__lbSync=true; try{ window.renderAll=patchedR; }catch(e){ window.addEventListener('load',card); }
+}
+
+// ---- GitHub API ----
+function ghGet(){
+  return fetch(apiURL()+'?t='+Date.now(),{headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Cache-Control':'no-cache'}});
+}
+function ghPut(json,sha){
+  return fetch(apiURL(),{method:'PUT',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'LB sync '+cfg.dev+' '+new Date().toISOString(),content:b64e(json),sha:sha||undefined})});
+}
+function blobFrom(json){
+  var o=null; try{ o=JSON.parse(json); }catch(e){}
+  if(o&&o.v===1&&o.data&&typeof o.data==='object')return o;
+  return null;
+}
+
+// ---- MERGE: per-key newest stamp wins; arrays NEVER clobber (union, newest side first); unstamped ties: factory-default side loses ----
+function sameId(a,b){
+  if(a===b)return true;
+  if(a&&b&&typeof a==='object'&&typeof b==='object'){ if(a.id!==undefined&&a.id===b.id)return true; return JSON.stringify(a)===JSON.stringify(b); }
+  return false;
+}
+function unionArr(a,b){
+  var out=[],seen={};
+  function key(it){ return (it&&typeof it==='object'&&it.id!==undefined)?'id:'+it.id:((it&&typeof it==='object')?'j:'+JSON.stringify(it):'v:'+it); }
+  function pushAll(arr){ (arr||[]).forEach(function(it){ var q=key(it); if(seen[q])return; seen[q]=1; out.push(it); }); }
+  pushAll(a); pushAll(b); return out;
+}
+function unionNewFirst(newer,older){ return unionArr(newer,older); }
+function unionObj(a,b){
+  var o=JSON.parse(JSON.stringify(a||{}));
+  Object.keys(b||{}).forEach(function(k){ if(!(k in o))o[k]=b[k];
+    else if(o[k]&&b[k]&&typeof o[k]==='object'&&typeof b[k]==='object'&&!Array.isArray(o[k])&&!Array.isArray(b[k]))o[k]=unionObj(o[k],b[k]);
+    else if(Array.isArray(o[k])&&Array.isArray(b[k]))o[k]=unionArr(o[k],b[k]); });
+  return o;
+}
+function mergeRemote(blob,mode){ // mode: 'auto' | 'cloud' | 'device' | 'union'
+  var rd=blob.data,kt={}; try{ kt=rd._kt&&typeof rd._kt==='object'?rd._kt:{}; }catch(e){ kt={}; }
+  if(!S._kt||typeof S._kt!=='object')S._kt={};
+  var DEF=(typeof def!=='undefined'&&def)?def:{};
+  var taken=[],clash=[];
+  Object.keys(rd).forEach(function(k){
+    if(k==='_kt')return;
+    var rv,lv; try{ rv=JSON.stringify(rd[k]); lv=JSON.stringify(S[k]); }catch(e){ return; }
+    var rt=kt[k]||0,lt=S._kt[k]||0;
+    if(rv===lv){ if(rt>lt)S._kt[k]=rt; return; }
+    var decision;
+    if(mode==='cloud')decision='remote';
+    else if(mode==='device')decision='local';
+    else if(mode==='union')decision='union';
+    else if(rt>lt)decision='remote';
+    else if(lt>rt)decision='local';
+    else{ // unstamped tie: the side that still equals the factory default loses
+      var ld=false,rdef=false;
+      try{ ld=(lv===JSON.stringify(DEF[k])); rdef=(rv===JSON.stringify(DEF[k])); }catch(e){}
+      if(ld&&!rdef)decision='remote';
+      else if(rdef)decision='local';
+      else decision='clash';
+    }
+    if(decision==='clash'){ clash.push(k); return; }
+    var merged;
+    try{
+      if(Array.isArray(S[k])&&Array.isArray(rd[k])){ // arrays: never lose items — union, newest side first
+        merged=(decision==='remote')?unionNewFirst(rd[k],S[k]):unionNewFirst(S[k],rd[k]);
+      } else if(decision==='remote'){ merged=JSON.parse(rv); }
+      else if(decision==='union'){
+        if(S[k]&&rd[k]&&typeof S[k]==='object'&&typeof rd[k]==='object'&&!Array.isArray(S[k])&&!Array.isArray(rd[k]))merged=unionObj(S[k],rd[k]);
+        else merged=S[k];
+      }
+      else merged=S[k];
+    }catch(e){ merged=(decision==='remote')?JSON.parse(rv):S[k]; }
+    var changed; try{ changed=(JSON.stringify(merged)!==lv); }catch(e){ changed=true; }
+    S[k]=merged; S._kt[k]=Math.max(rt,lt)||blob.savedAt||Date.now();
+    if(changed)taken.push(k);
+  });
+  if(mode!=='device'){ for(var k2 in kt){ if(S._kt[k2]===undefined)S._kt[k2]=kt[k2]; } }
+  return {taken:taken,clash:clash};
+}
+
+// ---- conflict chooser (one-time overlay) ----
+function chooser(blob,clash,then){
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px;';
+  var when=blob.savedAt?new Date(blob.savedAt).toLocaleString():'';
+  ov.innerHTML='<div style="background:var(--card,#141a24);border:1px solid var(--line,#2a3444);border-radius:16px;max-width:420px;width:100%;padding:18px;font-family:inherit">'+
+   '<div style="font-size:17px;font-weight:700;margin-bottom:6px">☁️ Cloud data found</div>'+
+   '<div style="font-size:13px;opacity:.85;line-height:1.5;margin-bottom:14px">This device and the cloud copy (from <b>'+(blob.dev||'another device')+'</b>, '+when+') both changed the same things and I can\'t tell which you want.<br>Pick what wins for THIS first sync:</div>'+
+   '<button data-x="cloud" style="display:block;width:100%;margin:8px 0;padding:12px;border-radius:12px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px;font-weight:600">⬇️ Use cloud data (keep '+(blob.dev||'other')+'\'s version)</button>'+
+   '<button data-x="device" style="display:block;width:100%;margin:8px 0;padding:12px;border-radius:12px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px;font-weight:600">📱 Keep this device\'s data</button>'+
+   '<button data-x="union" style="display:block;width:100%;margin:8px 0;padding:12px;border-radius:12px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px;font-weight:600">🤝 Merge both (add together)</button>'+
+   '<div style="font-size:11px;opacity:.6;margin-top:8px">Only asked once — afterwards every change syncs automatically. You can always Export a backup first (More → Backup).</div></div>';
+  document.body.appendChild(ov);
+  ov.querySelectorAll('button[data-x]').forEach(function(b){
+    b.onclick=function(){ var m=b.dataset.x; ov.remove(); then(m); };
+  });
+}
+
+// ---- PULL ----
+function pullNow(cb){ // cb(ok, mergedCount, blob)
+  if(!ready()||st.busy){ if(cb)cb(false,0,null); return; }
+  st.busy=true;
+  ghGet().then(function(r){
+    if(r.status===404){ st.remoteSha=null; st.busy=false; if(cb)cb(true,0,null); return; }
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json().then(function(j){
+      st.remoteSha=j.sha;
+      var blob=blobFrom(b64d(j.content||''));
+      if(!blob){ st.busy=false; if(cb)cb(true,0,null); return; }
+      st.remoteSavedAt=blob.savedAt||0; st.remoteDev=blob.dev||'';
+      if(blob.savedAt&&blob.savedAt<=lastSeenRemote()){ st.busy=false; if(cb)cb(true,0,blob); return; }
+      if(blob.savedAt)markSeen(blob.savedAt);
+      try{ st.lastRemoteSig=JSON.stringify(blob.data); }catch(e){}
+      var res=mergeRemote(blob,'auto');
+      var finish=function(){
+        if(res.taken.length){ try{ window.save(); }catch(e){} try{ window.renderAll(); }catch(e){} }
+        st.lastSync=Date.now(); saveCfg();
+        if(res.taken.length)toast('🔄 Synced from '+(blob.dev||'another device')+' ('+res.taken.length+' update'+(res.taken.length>1?'s':'')+')');
+        st.busy=false; if(cb)cb(true,res.taken.length,blob);
+      };
+      if(res.clash.length){ st.busy=false;
+        chooser(blob,res.clash,function(m){
+          st.busy=true;
+          mergeRemote(blob,m);
+          try{ window.save(); }catch(e){}
+          try{ window.renderAll(); }catch(e){}
+          st.lastSync=Date.now(); saveCfg(); st.busy=false; queuePush();
+          if(cb)cb(true,res.clash.length,blob);
+        });
+      } else finish();
+    });
+  }).catch(function(e){ st.busy=false; warnOnce('⚠️ Sync check failed ('+(e&&e.message?e.message:'offline')+') — will retry'); if(cb)cb(false,0,null); });
+}
+var seenKey='lb_sync_seen';
+function markSeen(t){ try{ localStorage.setItem(seenKey,String(t)); }catch(e){} }
+function lastSeenRemote(){ try{ return Number(localStorage.getItem(seenKey))||0; }catch(e){ return 0; } }
+
+// ---- PUSH ----
+function pushNow(cb){
+  if(!ready()||st.busy){ if(cb)cb(false); return; }
+  st.busy=true; st.pending=true;
+  var go=function(sha){
+    var t=Date.now();
+    var sig; try{ sig=JSON.stringify(S); }catch(e){ sig=null; }
+    if(sig!==null&&(sig===st.lastRemoteSig||sig===st.lastPushSig)){ st.pending=false; st.lastSync=Date.now(); saveCfg(); st.busy=false; if(cb)cb(true); return; } // nothing new vs cloud — skip upload (kills echo churn)
+    var payload={v:1,savedAt:t,dev:cfg.dev||'device',data:S};
+    ghPut(JSON.stringify(payload),sha).then(function(r){
+      if(r.status===409||r.status===422){ // sha moved -> pull-merge then retry once
+        st.busy=false;
+        return pullNow(function(ok){ if(ok)pushNow(cb); else { if(cb)cb(false); } });
+      }
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return r.json().then(function(j){ st.remoteSha=(j.content&&j.content.sha)||st.remoteSha; st.pending=false; st.lastSync=Date.now(); st.warned=false; st.lastPushSig=sig; markSeen(t); saveCfg(); try{card();}catch(e){} st.busy=false; if(cb)cb(true); });
+    }).catch(function(e){ st.busy=false; warnOnce('⚠️ Sync upload failed ('+(e&&e.message?e.message:'offline')+') — will retry on next change'); try{card();}catch(e2){} if(cb)cb(false); });
+  };
+  if(st.remoteSha){ go(st.remoteSha); return; }
+  ghGet().then(function(r){
+    if(r.status===404)return go(undefined);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json().then(function(j){ go(j.sha); });
+  }).catch(function(e){ st.busy=false; warnOnce('⚠️ Sync upload failed ('+(e&&e.message?e.message:'offline')+')'); if(cb)cb(false); });
+}
+function warnOnce(m){ if(st.warned)return; st.warned=true; toast(m); }
+function queuePush(){ clearTimeout(st.pushT); st.pushT=setTimeout(function(){ if(navigator.onLine)pushNow(); else queuePush(); },5000); }
+
+// ---- auto pull loop ----
+function startLoop(){
+  if(st.intv)clearInterval(st.intv);
+  st.intv=setInterval(function(){
+    if(!ready()||st.busy)return;
+    if(document.visibilityState==='visible'&&navigator.onLine)pullNow();
+  },20000);
+}
+window.addEventListener('online',function(){ if(ready())pullNow(); });
+document.addEventListener('visibilitychange',function(){ if(ready()&&!st.busy&&document.visibilityState==='visible'&&navigator.onLine)pullNow(); });
+
+// ---- UI card (re-injected after every renderAll) ----
+var draft={owner:cfg.owner||'',repo:cfg.repo||'loopbreaker-data',token:'',dev:cfg.dev||''};
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function fmtAgo(t){ if(!t)return 'never'; var d=Math.round((Date.now()-t)/1000); if(d<45)return 'just now'; if(d<3600)return Math.round(d/60)+' min ago'; if(d<86400)return Math.round(d/3600)+' h ago'; return new Date(t).toLocaleDateString(); }
+function card(){
+  var host=document.getElementById('tab-more'); if(!host)return;
+  var old=document.getElementById('lbSyncCard'); if(old)old.remove();
+  var el=document.createElement('div'); el.id='lbSyncCard';
+  var inner;
+  if(!ready()){
+    inner='<div style="font-size:16px;font-weight:800;margin-bottom:4px">☁️ Cloud Sync</div>'+
+    '<div style="font-size:12.5px;opacity:.75;line-height:1.5;margin-bottom:10px">Keep this app identical on <b>all your devices</b> — every change auto-saves to your own <b>private GitHub repo</b> and every device picks it up automatically.</div>'+
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<input id="lsO" placeholder="GitHub username (e.g. junixx98)" value="'+esc(draft.owner)+'" style="padding:10px 12px;border-radius:10px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px">'+
+    '<input id="lsR" placeholder="Private repo name" value="'+esc(draft.repo)+'" style="padding:10px 12px;border-radius:10px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px">'+
+    '<input id="lsT" type="password" placeholder="Paste token (github_pat_… / ghp_…)" value="'+esc(draft.token)+'" style="padding:10px 12px;border-radius:10px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px">'+
+    '<input id="lsD" placeholder="This device\'s name (e.g. My Phone)" value="'+esc(draft.dev)+'" style="padding:10px 12px;border-radius:10px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:14px">'+
+    '</div>'+
+    '<button id="lsGo" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:none;background:var(--accent,#38bdf8);color:#04121f;font-size:14px;font-weight:800">✅ Connect &amp; sync now</button>'+
+    '<details style="margin-top:10px"><summary style="font-size:12.5px;opacity:.8;cursor:pointer">🪜 How to get a token (2 minutes, one time)</summary>'+
+    '<ol style="font-size:12px;opacity:.8;line-height:1.7;margin:8px 0 0 18px;padding:0">'+
+    '<li>On github.com: tap your avatar → <b>Settings</b> → bottom → <b>Developer settings</b>.</li>'+
+    '<li><b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.</li>'+
+    '<li>Token name: <b>loopbreaker</b> · Expiration: 90 or 365 days · <b>Repository access: Only select repositories</b> → pick your <b>loopbreaker-data</b> private repo (create it first: github.com/new → choose <b>Private</b>).</li>'+
+    '<li>Under <b>Permissions → Repository permissions → Contents</b>: set to <b>Read and write</b>. Generate, then <b>copy the token</b> and paste it above.</li>'+
+    '</ol></details>';
+  } else {
+    inner='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:16px;font-weight:800">☁️ Cloud Sync</span><span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:#16a34a22;color:#4ade80;border:1px solid #4ade8055;font-weight:700">ON</span></div>'+
+    '<div style="font-size:12.5px;opacity:.8;line-height:1.6">Syncing to <b>'+esc(cfg.owner+'/'+cfg.repo)+'</b> · this device: <b>'+esc(cfg.dev||'device')+'</b><br>'+
+    'Last cloud change: <b>'+fmtAgo(st.remoteSavedAt)+'</b>'+(st.remoteDev?' (from '+esc(st.remoteDev)+')':'')+' · Last check: <b>'+fmtAgo(st.lastSync)+'</b>'+(st.pending?' · <b>⏳ changes waiting to upload…</b>':'')+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
+    '<button id="lsNow" style="flex:1;padding:11px;border-radius:12px;border:1px solid var(--line,#2a3444);background:var(--card2,#1c2432);color:inherit;font-size:13px;font-weight:700">🔄 Sync now</button>'+
+    '<button id="lsOff" style="flex:1;padding:11px;border-radius:12px;border:1px solid #f8717155;background:#f8717118;color:#f87171;font-size:13px;font-weight:700">⏸ Disconnect</button>'+
+    '</div><div style="font-size:11px;opacity:.55;margin-top:8px">Token is stored only on this device — it never gets uploaded. Cloud copy lives in your private repo.</div>';
+  }
+  el.innerHTML='<div class="wcard" style="margin-bottom:12px;padding:14px">'+inner+'</div>';
+  host.insertBefore(el,host.firstChild);
+  if(!ready()){
+    ['lsO','lsR','lsT','lsD'].forEach(function(id){
+      var n=document.getElementById(id); if(!n)return;
+      n.oninput=function(){ draft[{lsO:'owner',lsR:'repo',lsT:'token',lsD:'dev'}[id]]=n.value; };
+    });
+    var g=document.getElementById('lsGo');
+    if(g)g.onclick=function(){
+      var o=(draft.owner||'').trim(),r=(draft.repo||'').trim(),t=(draft.token||'').trim(),d=(draft.dev||'').trim();
+      if(!o||!r||!t){ toast('⚠️ Fill in username, repo name and token'); return; }
+      cfg={on:true,owner:o,repo:r,path:'sync.json',token:t,dev:d||'device'};
+      st.busy=false; saveCfg();
+      g.disabled=true; g.textContent='⏳ Connecting…';
+      pullNow(function(ok,n2,blob){
+        if(!ok&&!blob){ toast('❌ Could not reach the repo — check name & token'); g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card(); return; }
+        if(!blob){ pushNow(function(pok){ card(); toast(pok?'☁️ Connected — your data is now saved to your private repo!':'☁️ Connected (upload will retry automatically)'); }); }
+        else { card(); toast('☁️ Connected — cloud copy found'+(st.remoteDev?' (from '+st.remoteDev+')':'')); }
+      });
+    };
+  } else {
+    var n1=document.getElementById('lsNow'); if(n1)n1.onclick=function(){ n1.textContent='⏳…'; pullNow(function(){ pushNow(function(){ card(); }); }); };
+    var n2=document.getElementById('lsOff'); if(n2)n2.onclick=function(){
+      try{ window.uiConfirm('Disconnect cloud sync? Your data stays on this device — the cloud copy just stops updating.',function(){
+        cfg.on=false; cfg.token=''; saveCfg(); clearInterval(st.intv); st.intv=null; card(); toast('☁️ Cloud sync disconnected');
+      },{okText:'Disconnect'}); }catch(e){ cfg.on=false; saveCfg(); card(); }
+    };
+  }
+}
+
+// ---- boot ----
+function boot(){
+  card(); // card visible immediately (setup form when off, status when on)
+  if(ready()){
+    stampSections(); // baseline: don't stamp pre-existing data
+    pullNow(function(){ startLoop(); });
+  }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
+
+// test hooks
+window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(JSON.stringify(cfg));},st:st,merge:mergeRemote};
+})();
+</script>
+
 </body>
 </html>
