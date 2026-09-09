@@ -1,6 +1,6 @@
 'use strict';
 /* LoopBreaker offline brain: cache-first so the app opens with zero signal. */
-var CACHE = 'loopbreaker-v8'; // v5 = event detail view + rich event notes
+var CACHE = 'loopbreaker-v9'; // v9 = never intercept GitHub API / cross-origin; nav network-first
 var ASSETS = [
   './',
   './index.html',
@@ -32,18 +32,34 @@ self.addEventListener('activate', function (e) {
 });
 
 self.addEventListener('fetch', function (e) {
+  var url = e.request.url || '';
   if (e.request.method !== 'GET') { return; }
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(function (hit) {
-      if (hit) { return hit; }
-      return fetch(e.request).then(function (resp) {
-        if (resp && resp.ok && e.request.url.indexOf('http') === 0) {
+  // Cross-origin requests (GitHub API sync etc.) go straight to the network — never cached, never fallback'd.
+  if (url.indexOf(self.location.origin) !== 0) { return; }
+  if (e.request.mode === 'navigate') {
+    // App shell: network-first so updates land on open; cached copy only when offline.
+    e.respondWith(
+      fetch(e.request).then(function (resp) {
+        if (resp && resp.ok) {
           var copy = resp.clone();
-          caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+          caches.open(CACHE).then(function (c) { c.put('./index.html', copy); });
         }
         return resp;
       }).catch(function () {
         return caches.match('./index.html');
+      })
+    );
+    return;
+  }
+  e.respondWith(
+    caches.match(e.request, { ignoreSearch: true }).then(function (hit) {
+      if (hit) { return hit; }
+      return fetch(e.request).then(function (resp) {
+        if (resp && resp.ok && resp.type === 'basic') {
+          var copy = resp.clone();
+          caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+        }
+        return resp;
       });
     })
   );

@@ -2624,6 +2624,8 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
 
 
 
+
+
 <script>
 // ============ LB2.8 CLOUD SYNC (GitHub private repo) ============
 (function(){
@@ -2669,7 +2671,7 @@ if(typeof window.renderAll==='function'&&!window.renderAll.__lbSync){
 
 // ---- GitHub API ----
 function ghGet(){
-  return fetch(apiURL()+'?t='+Date.now(),{headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Cache-Control':'no-cache'}});
+  return fetch(apiURL()+'?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Cache-Control':'no-cache'}});
 }
 function ghPut(json,sha){
   return fetch(apiURL(),{method:'PUT',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
@@ -2890,7 +2892,7 @@ function card(){
       st.busy=false; saveCfg();
       g.disabled=true; g.textContent='⏳ Connecting…';
       pullNow(function(ok,n2,blob){
-        if(!ok&&!blob){ var tl=t.length,le=st.lastErr||'no detail';var hint=le.indexOf('401')>=0?'token is dead or wrong — regenerate it and re-copy the fresh value':(le.indexOf('404')>=0?'repo not found — check spelling of repo name':(le.indexOf('403')>=0?'token lacks permission — Contents/Code must be Read and write':'no internet or connection blocked'));var trunc=(tl<80&&tl!==40)?' ⚠️ Token length '+tl+' chars — expected ~93, your copy looks TRUNCATED. Use the copy icon on the token page.':'';toast('❌ GitHub says '+le+' → '+hint+'.'+trunc);g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card(); return; }
+        if(!ok&&!blob){ var tl=t.length,le=st.lastErr||'no detail';var hint=le.indexOf('401')>=0?'token is dead or wrong — regenerate it and re-copy the fresh value':(le.indexOf('404')>=0?'repo not found — check spelling of repo name':(le.indexOf('403')>=0?'token lacks permission — Contents/Code must be Read and write':(le.indexOf('not valid JSON')>=0||le.indexOf('DOCTYPE')>=0||le.indexOf('JSON')>=0?'connection dropped mid-call — check internet, then tap Connect again':'no internet or connection blocked')));var trunc=(tl<80&&tl!==40)?' ⚠️ Token length '+tl+' chars — expected ~93, your copy looks TRUNCATED. Use the copy icon on the token page.':'';toast('❌ GitHub says '+le+' → '+hint+'.'+trunc);g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card(); return; }
         if(!blob){ pushNow(function(pok){ card(); toast(pok?'☁️ Connected — your data is now saved to your private repo!':'☁️ Connected (upload will retry automatically)'); }); }
         else { card(); toast('☁️ Connected — cloud copy found'+(st.remoteDev?' (from '+st.remoteDev+')':'')); }
       });
