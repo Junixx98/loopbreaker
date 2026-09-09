@@ -2628,6 +2628,8 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
 
 
 
+
+
 <script>
 // ============ LB2.8 CLOUD SYNC (GitHub private repo) ============
 (function(){
@@ -2673,9 +2675,16 @@ if(typeof window.renderAll==='function'&&!window.renderAll.__lbSync){
 
 // ---- GitHub API ----
 function ghGet(){
-  var go=function(){ return fetch(apiURL()+'?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Cache-Control':'no-cache'}}); };
-  return go().catch(function(e){ // flaky-wifi self-heal: one silent retry 2.5s later
-    return new Promise(function(res,rej){ setTimeout(function(){ go().then(res,rej); },2500); });
+  var go=function(){ return fetch(apiURL()+'?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'}}); };
+  // flaky-wifi self-heal: up to 2 silent retries (2.5 s, then 6 s)
+  return go().catch(function(){
+    return new Promise(function(res,rej){
+      setTimeout(function(){
+        go().then(res,function(){
+          setTimeout(function(){ go().then(res,rej); },6000);
+        });
+      },2500);
+    });
   });
 }
 function ghPut(json,sha){
@@ -2893,13 +2902,34 @@ function card(){
     });
     var g=document.getElementById('lsGo');
     if(g)g.onclick=function(){
+      if(st.busy){ toast('⏳ Still working on the last attempt — wait 5 seconds'); return; }
       var o=(draft.owner||'').trim(),r=(draft.repo||'').trim(),t=(draft.token||'').trim(),d=(draft.dev||'').trim();
       if(!o||!r||!t){ toast('⚠️ Fill in username, repo name and token'); return; }
       cfg={on:true,owner:o,repo:r,path:'sync.json',token:t,dev:d||'device'};
-      st.busy=false; saveCfg();
+      st.busy=false; st.lastErr=null; saveCfg();
       g.disabled=true; g.textContent='⏳ Connecting…';
       pullNow(function(ok,n2,blob){
-        if(!ok&&!blob){ var tl=t.length,le=st.lastErr||'no detail';var hint=le.indexOf('401')>=0?'token is dead or wrong — regenerate it and re-copy the fresh value':(le.indexOf('404')>=0?'repo not found — check spelling of repo name':(le.indexOf('403')>=0?'token lacks permission — Contents/Code must be Read and write':(le.indexOf('not valid JSON')>=0||le.indexOf('DOCTYPE')>=0||le.indexOf('JSON')>=0?'connection dropped mid-call — check internet, then tap Connect again':'no internet or connection blocked')));var trunc=(tl<80&&tl!==40)?' ⚠️ Token length '+tl+' chars — expected ~93, your copy looks TRUNCATED. Use the copy icon on the token page.':'';toast('❌ GitHub says '+le+' → '+hint+'.'+trunc);g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card(); return; }
+        if(!ok&&!blob){
+          // second opinion: run the exact probe sequence before declaring failure
+          fetch('https://api.github.com/zen',{cache:'no-store'}).then(function(){
+            return fetch(apiURL()+'?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+t,'Accept':'application/vnd.github+json'}});
+          }).then(function(r2){
+            // connection alive AND repo reachable -> first failure was a flicker; retry the real pull once
+            pullNow(function(ok3,n3,blob3){
+              if(!ok3&&!blob3){ failConn('retry failed too — '+(st.lastErr||'unknown')); }
+              else succeed(blob3);
+            });
+          }).catch(function(){
+            failConn('no connection even to api.github.com — internet dropped');
+          });
+          function succeed(blob3){ card(); toast(blob3?'☁️ Connected — cloud copy found'+(st.remoteDev?' (from '+st.remoteDev+')':''):'☁️ Connected — your data is now saved to your private repo!'); }
+          function failConn(why){
+            toast('❌ '+why);
+            var pl=document.getElementById('lsProbe'); if(pl)pl.textContent='🧪 LAST TRY FAILED: '+why+' — tap 🧪 Test connection; the moment it ends in OK, tap Connect immediately';
+            g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card();
+          }
+          return;
+        }
         if(!blob){ pushNow(function(pok){ card(); toast(pok?'☁️ Connected — your data is now saved to your private repo!':'☁️ Connected (upload will retry automatically)'); }); }
         else { card(); toast('☁️ Connected — cloud copy found'+(st.remoteDev?' (from '+st.remoteDev+')':'')); }
       });
