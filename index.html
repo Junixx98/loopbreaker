@@ -2623,6 +2623,7 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
 </script>
 
 
+
 <script>
 // ============ LB2.8 CLOUD SYNC (GitHub private repo) ============
 (function(){
@@ -2794,7 +2795,7 @@ function pullNow(cb){ // cb(ok, mergedCount, blob)
         });
       } else finish();
     });
-  }).catch(function(e){ st.busy=false; warnOnce('⚠️ Sync check failed ('+(e&&e.message?e.message:'offline')+') — will retry'); if(cb)cb(false,0,null); });
+  }).catch(function(e){ st.busy=false; st.lastErr=(e&&e.message)?e.message:'no connection'; warnOnce('⚠️ Sync check failed ('+st.lastErr+') — will retry'); if(cb)cb(false,0,null); });
 }
 var seenKey='lb_sync_seen';
 function markSeen(t){ try{ localStorage.setItem(seenKey,String(t)); }catch(e){} }
@@ -2816,14 +2817,14 @@ function pushNow(cb){
       }
       if(!r.ok)throw new Error('HTTP '+r.status);
       return r.json().then(function(j){ st.remoteSha=(j.content&&j.content.sha)||st.remoteSha; st.pending=false; st.lastSync=Date.now(); st.warned=false; st.lastPushSig=sig; markSeen(t); saveCfg(); try{card();}catch(e){} st.busy=false; if(cb)cb(true); });
-    }).catch(function(e){ st.busy=false; warnOnce('⚠️ Sync upload failed ('+(e&&e.message?e.message:'offline')+') — will retry on next change'); try{card();}catch(e2){} if(cb)cb(false); });
+    }).catch(function(e){ st.busy=false; st.lastErr=(e&&e.message)?e.message:'no connection'; warnOnce('⚠️ Sync upload failed ('+st.lastErr+') — will retry on next change'); try{card();}catch(e2){} if(cb)cb(false); });
   };
   if(st.remoteSha){ go(st.remoteSha); return; }
   ghGet().then(function(r){
     if(r.status===404)return go(undefined);
     if(!r.ok)throw new Error('HTTP '+r.status);
     return r.json().then(function(j){ go(j.sha); });
-  }).catch(function(e){ st.busy=false; warnOnce('⚠️ Sync upload failed ('+(e&&e.message?e.message:'offline')+')'); if(cb)cb(false); });
+  }).catch(function(e){ st.busy=false; st.lastErr=(e&&e.message)?e.message:'no connection'; warnOnce('⚠️ Sync upload failed ('+st.lastErr+')'); if(cb)cb(false); });
 }
 function warnOnce(m){ if(st.warned)return; st.warned=true; toast(m); }
 function queuePush(){ clearTimeout(st.pushT); st.pushT=setTimeout(function(){ if(navigator.onLine)pushNow(); else queuePush(); },5000); }
@@ -2889,7 +2890,7 @@ function card(){
       st.busy=false; saveCfg();
       g.disabled=true; g.textContent='⏳ Connecting…';
       pullNow(function(ok,n2,blob){
-        if(!ok&&!blob){ toast('❌ Could not reach the repo — check name & token'); g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card(); return; }
+        if(!ok&&!blob){ var tl=t.length,le=st.lastErr||'no detail';var hint=le.indexOf('401')>=0?'token is dead or wrong — regenerate it and re-copy the fresh value':(le.indexOf('404')>=0?'repo not found — check spelling of repo name':(le.indexOf('403')>=0?'token lacks permission — Contents/Code must be Read and write':'no internet or connection blocked'));var trunc=(tl<80&&tl!==40)?' ⚠️ Token length '+tl+' chars — expected ~93, your copy looks TRUNCATED. Use the copy icon on the token page.':'';toast('❌ GitHub says '+le+' → '+hint+'.'+trunc);g.disabled=false; g.textContent='✅ Connect & sync now'; cfg.on=false; saveCfg(); card(); return; }
         if(!blob){ pushNow(function(pok){ card(); toast(pok?'☁️ Connected — your data is now saved to your private repo!':'☁️ Connected (upload will retry automatically)'); }); }
         else { card(); toast('☁️ Connected — cloud copy found'+(st.remoteDev?' (from '+st.remoteDev+')':'')); }
       });
