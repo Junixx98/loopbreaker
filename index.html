@@ -2626,6 +2626,7 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
 
 
 
+
 <script>
 // ============ LB2.8 CLOUD SYNC (GitHub private repo) ============
 (function(){
@@ -2671,7 +2672,10 @@ if(typeof window.renderAll==='function'&&!window.renderAll.__lbSync){
 
 // ---- GitHub API ----
 function ghGet(){
-  return fetch(apiURL()+'?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Cache-Control':'no-cache'}});
+  var go=function(){ return fetch(apiURL()+'?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Cache-Control':'no-cache'}}); };
+  return go().catch(function(e){ // flaky-wifi self-heal: one silent retry 2.5s later
+    return new Promise(function(res,rej){ setTimeout(function(){ go().then(res,rej); },2500); });
+  });
 }
 function ghPut(json,sha){
   return fetch(apiURL(),{method:'PUT',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
