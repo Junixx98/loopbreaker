@@ -44,6 +44,14 @@ main{max-width:780px;margin:0 auto;padding:16px}
 .whead h2{font-size:14px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wcard.sz-s .whead h2{font-size:12px}
 .wctl{background:var(--card2);border:1px solid var(--line);color:var(--muted);border-radius:7px;font-size:10px;padding:3px 7px;cursor:pointer;font-weight:700}
+.wcard{position:relative}
+.wcorner{position:absolute;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-size:16px;font-weight:800;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:6;padding:0;line-height:1}
+.wcard.editing .wcorner{display:flex}
+.wc-tl{top:-8px;left:-8px;color:#f87171;border-color:#f8717155;background:#241416}
+.wc-tr{top:-8px;right:-8px;color:var(--accent);border-color:var(--accent);cursor:grab;touch-action:none}
+.wc-bl{bottom:-8px;left:-8px}
+.wc-br{bottom:-8px;right:-8px;color:var(--accent);border-color:var(--accent)}
+.wcard.dragging{opacity:.55;outline:2px dashed var(--accent);outline-offset:3px}
 .wctl:hover{color:var(--text)}
 .muted{color:var(--muted);font-size:13px}
 .big{font-size:28px;font-weight:800}
@@ -478,31 +486,49 @@ function renderWidgets(tab,bodies){
     if(c.hide&&!edit)return '';
     let ctl;
     if(edit){
-      ctl='<button class="wctl" data-wact="size" data-i="'+id+'" title="Size">'+(c.size==='s'?'S':c.size==='l'?'L':'M')+'</button>'
-        +'<button class="wctl" data-wact="col" data-i="'+id+'" title="Collapse">'+(c.col?'＋':'－')+'</button>'
-        +'<button class="wctl" data-wact="up" data-i="'+id+'" title="Move up">▲</button>'
-        +'<button class="wctl" data-wact="dn" data-i="'+id+'" title="Move down">▼</button>'
-        +'<button class="wctl" data-wact="hide" data-i="'+id+'" title="Hide widget">'+(c.hide?'👁 Show':'🚫 Hide')+'</button>';
+      ctl='';
     } else {
       ctl='<button class="wctl" data-wact="col" data-i="'+id+'" title="Collapse">'+(c.col?'＋':'－')+'</button>';
     }
     const bd=bodies[id]; const body=(c.col||!bd)?'':bd.b();
     let st='';
     if(c.hide)st+='opacity:.45;';
-    if(c.w)st+='width:'+c.w+'px;';
-    if(c.h)st+='height:'+c.h+'px;';
-    if(edit)st+='resize:both;overflow:auto;';
-    return '<div class="wcard sz-'+c.size+'" data-wid="'+id+'"'+(st?' style="'+st+'"':'')+'>'
+    let corners='';
+    if(edit){
+      corners='<button class="wcorner wc-tl" data-wact="hide" data-i="'+id+'" title="'+(c.hide?'Show widget':'Remove widget')+'">'+(c.hide?'👁':'✕')+'</button>'
+        +'<button class="wcorner wc-tr" data-wact="drag" data-i="'+id+'" title="Hold and drag to move">⠿</button>'
+        +'<button class="wcorner wc-bl" data-wact="smaller" data-i="'+id+'" title="Smaller">－</button>'
+        +'<button class="wcorner wc-br" data-wact="bigger" data-i="'+id+'" title="Bigger">＋</button>';
+    }
+    return '<div class="wcard sz-'+c.size+(edit?' editing':'')+'" data-wid="'+id+'"'+(st?' style="'+st+'"':'')+'>'
+      +corners
       +'<div class="whead"><h2>'+ic(dd.ic)+' '+dd.t+'</h2>'+ctl+'</div>'+body+'</div>';
   }).join('');
   document.getElementById('tab-'+tab).innerHTML=html;
-  if(edit){ document.querySelectorAll('#tab-'+tab+' .wcard').forEach(function(card){
-    card.addEventListener('mouseup',function(){
-      const id2=card.dataset.wid; if(!id2)return;
-      const w3=wstate(tab); if(!w3.cfg[id2])w3.cfg[id2]={size:'m',col:false,hide:false};
-      w3.cfg[id2].w=Math.round(card.getBoundingClientRect().width);
-      w3.cfg[id2].h=Math.round(card.getBoundingClientRect().height);
-      save();
+  if(edit){ document.querySelectorAll('#tab-'+tab+' .wc-tr').forEach(function(h){
+    h.addEventListener('pointerdown',function(e){
+      e.preventDefault();
+      const card=h.closest('.wcard'); if(!card)return;
+      const cont=card.parentElement;
+      card.classList.add('dragging');
+      try{ h.setPointerCapture(e.pointerId); }catch(err){}
+      const move=function(ev){
+        const cards=Array.prototype.slice.call(cont.querySelectorAll('.wcard')).filter(function(x){return x!==card;});
+        let ref=null;
+        for(let ci=0;ci<cards.length;ci++){ const r=cards[ci].getBoundingClientRect(); if(ev.clientY&&(ev.clientY<r.top+r.height/2)){ ref=cards[ci]; break; } }
+        if(ref)cont.insertBefore(card,ref); else if(ev.clientY)cont.appendChild(card);
+      };
+      const up=function(){
+        card.classList.remove('dragging');
+        document.removeEventListener('pointermove',move);
+        document.removeEventListener('pointerup',up);
+        const w4=wstate(tab);
+        const ids=Array.prototype.slice.call(cont.querySelectorAll('.wcard')).map(function(x){return x.dataset.wid;});
+        if(ids.length===w4.order.length){ w4.order=ids; }
+        save(); renderAll();
+      };
+      document.addEventListener('pointermove',move);
+      document.addEventListener('pointerup',up);
     });
   }); }
   document.querySelectorAll('#tab-'+tab+' [data-wact]').forEach(function(el){
@@ -510,6 +536,8 @@ function renderWidgets(tab,bodies){
       const w2=wstate(tab), id=el.dataset.i, act=el.dataset.wact;
       if(!w2.cfg[id])w2.cfg[id]={size:'m',col:false,hide:false};
       if(act==='size'){ const o={s:'m',m:'l',l:'s'}; w2.cfg[id].size=o[w2.cfg[id].size]; }
+      if(act==='smaller'){ w2.cfg[id].size={l:'m',m:'s',s:'s'}[w2.cfg[id].size]||'m'; }
+      if(act==='bigger'){ w2.cfg[id].size={s:'m',m:'l',l:'l'}[w2.cfg[id].size]||'m'; }
       if(act==='col'){ w2.cfg[id].col=!w2.cfg[id].col; }
       if(act==='hide'){ w2.cfg[id].hide=!w2.cfg[id].hide; }
       if(act==='up'||act==='dn'){
@@ -2571,7 +2599,7 @@ function boot(){
   document.querySelectorAll('[data-nc]').forEach(function(b){ b.onclick=function(){ setFontColor(b.dataset.nc,b); }; });
 })();
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB2.8 ready';
+  if(mark)mark.textContent='\u2713 LB2.8.1 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
