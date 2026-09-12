@@ -350,10 +350,25 @@ function showFatal(m){
 }
 window.onerror=function(msg,src,line){ showFatal(msg+(line?(' · line '+line):'')); return false; };
 // ================= STATE =================
-function lbUsers(){ try{ var u=JSON.parse(localStorage.getItem('lb_users')||'null'); if(!u||!u.list||!u.list.length){u={list:['Main'],cur:'Main',pins:{}}; localStorage.setItem('lb_users',JSON.stringify(u));} if(!u.pins)u.pins={}; return u; }catch(e){ return {list:['Main'],cur:'Main',pins:{}}; } }
+function lbUsers(){
+  var u;
+  try{ u=JSON.parse(localStorage.getItem('lb_users')||'null'); }catch(e){ u=null; }
+  if(!u||!Array.isArray(u.list))u={list:['Main'],cur:'Main',pins:{}};
+  u.list=u.list.filter(function(n){return typeof n==='string'&&n.trim();}).map(function(n){return n.trim();});
+  if(!u.base||typeof u.base!=='string'||!u.base.trim())u.base='Main';
+  if(u.list.indexOf(u.base)===-1)u.list.unshift(u.base);
+  var seen={},out=[];
+  u.list.forEach(function(n){ var k=n.toLowerCase(); if(!seen[k]){seen[k]=1;out.push(n);} });
+  u.list=out;
+  if(u.list.indexOf(u.cur)===-1||!u.cur)u.cur=u.base;
+  if(!u.pins||typeof u.pins!=='object')u.pins={};
+  try{ localStorage.setItem('lb_users',JSON.stringify(u)); }catch(e){}
+  return u;
+}
 function lbSetUsers(u){ try{ localStorage.setItem('lb_users',JSON.stringify(u)); }catch(e){} }
 function uSlug(n){ return String(n||'Main').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'main'; }
-function uKey(){ var u=lbUsers(); return u.cur==='Main'?'loopbreaker_v1':('loopbreaker_v1_'+uSlug(u.cur)); }
+function baseOf(u){ return (u&&u.base)?u.base:'Main'; }
+function uKey(){ var u=lbUsers(); return u.cur===baseOf(u)?'loopbreaker_v1':('loopbreaker_v1_'+uSlug(u.cur)); }
 window.lbSwitchUser=function(name){
   var u=lbUsers(); if(u.list.indexOf(name)===-1)return;
   try{ save(); }catch(e){}
@@ -366,6 +381,48 @@ window.lbAddUser=function(){
   var dup=u.list.some(function(x){return x.toLowerCase()===name.toLowerCase();});
   if(dup){ uiToast('That account already exists — tap it to switch'); return; }
   u.list.push(name); u.cur=name; lbSetUsers(u); location.reload();
+};
+window.lbRenameUser=function(oldName){
+  var u=lbUsers();
+  var isBase=oldName===baseOf(u);
+  var v=prompt('Rename "'+oldName+'" to:',oldName); if(v===null)return;
+  v=(v||'').trim(); if(!v||v===oldName)return;
+  if(u.list.some(function(x){return x.toLowerCase()===v.toLowerCase()&&x!==oldName;})){ uiToast('That name already exists'); return; }
+  if(!isBase){ var oK='loopbreaker_v1_'+uSlug(oldName), nK='loopbreaker_v1_'+uSlug(v);
+    try{ var data=localStorage.getItem(oK); if(data!==null){ localStorage.setItem(nK,data); localStorage.removeItem(oK); } }catch(e){} }
+  u.list=u.list.map(function(n){ return n===oldName?v:n; });
+  if(u.cur===oldName)u.cur=v;
+  if(isBase)u.base=v;
+  if(u.pins[oldName]){ u.pins[v]=u.pins[oldName]; delete u.pins[oldName]; }
+  lbSetUsers(u);
+  try{ var sc=JSON.parse(localStorage.getItem('loopbreaker_sync')||'null'); if(!isBase&&sc&&sc.on&&sc.owner&&sc.token)lbDelRemote('sync-'+uSlug(oldName)+'.json',sc); }catch(e){}
+  try{ uiToast('✏️ Renamed to "'+v+'" — use the same name on your other gadgets so they follow'); }catch(e){}
+  location.reload();
+};
+window.lbDeleteUser=function(name){
+  var u=lbUsers();
+  if(name===baseOf(u)){ uiToast('Your base account cannot be deleted — rename it instead'); return; }
+  if(u.list.length<2){ uiToast('At least one account must remain'); return; }
+  var wasCur=u.cur===name;
+  window.uiConfirm('Delete account "'+name+'"? Its data on THIS device will be erased, and its file (sync-'+uSlug(name)+'.json) will be removed from your vault if sync is connected.',function(){
+    try{ localStorage.removeItem('loopbreaker_v1_'+uSlug(name)); }catch(e){}
+    u.list=u.list.filter(function(n){ return n!==name; });
+    delete u.pins[name];
+    if(wasCur)u.cur='Main';
+    lbSetUsers(u);
+    try{ var sc=JSON.parse(localStorage.getItem('loopbreaker_sync')||'null'); if(sc&&sc.on&&sc.owner&&sc.token)lbDelRemote('sync-'+uSlug(name)+'.json',sc); }catch(e){}
+    if(wasCur){ location.reload(); }
+    else { renderAll(); uiToast('🗑️ Account "'+name+'" deleted'); }
+  },{okText:'Delete account'});
+};
+window.lbDelRemote=function(f,sc){ try{
+  var url='https://api.github.com/repos/'+encodeURIComponent(sc.owner)+'/'+encodeURIComponent(sc.repo)+'/contents/'+encodeURIComponent(f);
+  fetch(url+'?t='+Date.now(),{cache:'no-store',headers:{Authorization:'Bearer '+sc.token,Accept:'application/vnd.github+json'}})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ if(!j||!j.sha)return;
+      return fetch(url,{method:'DELETE',headers:{Authorization:'Bearer '+sc.token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'LoopBreaker: account removed',sha:j.sha})}); })
+    .catch(function(){});
+}catch(e){ }
 };
 window.lbSetPin=function(){
   var u=lbUsers();
@@ -1948,19 +2005,30 @@ function moreBodies(){
   return {
     users:{ b:function(){
       var u=lbUsers();
-      var btns=u.list.map(function(n){
-        var curN=u.cur===n;
-        return '<button class="btn '+(curN?'':'ghost')+'" data-uact="pick" data-un="'+String(n).replace(/"/g,'&quot;')+'" style="width:100%;margin-bottom:6px'+(curN?';border-color:var(--accent);color:var(--accent)':'')+'">'+(curN?'✓ ':'')+'👤 '+n+(u.pins[n]?' 🔒':'')+(curN?' — active':'')+'</button>';
+      var rows=u.list.map(function(n){
+        var curN=u.cur===n, isBase=n===baseOf(u);
+        var main='<button class="btn '+(curN?'':'ghost')+'" data-uact="pick" data-un="'+String(n).replace(/"/g,'&quot;')+'" style="flex:1;justify-content:flex-start;text-align:left;min-width:0'+(curN?';border-color:var(--accent);color:var(--accent)':'')+'">'+(curN?'✓ ':'')+'👤 '+esc(n)+(curN?' — active':'')+(isBase?' (base)':'')+(u.pins[n]?' 🔒':'')+'</button>';
+        var tools='<button class="btn ghost" data-uact="ren" data-un="'+String(n).replace(/"/g,'&quot;')+'" title="Rename" style="padding:8px 10px">✏️</button>'
+          +(isBase?'':'<button class="btn ghost" data-uact="del" data-un="'+String(n).replace(/"/g,'&quot;')+'" title="Delete" style="padding:8px 10px;color:#f87171;border-color:#f8717155">🗑</button>');
+        return '<div style="display:flex;gap:6px;margin-bottom:6px">'+main+tools+'</div>';
       }).join('');
-      return '<div class="muted" style="margin-bottom:8px">One app, many lives. Each account keeps its OWN routines, trades, money — and syncs to its OWN private file in your vault (Main → sync.json · others → sync-<name>.json). Open the same account name on any gadget and its data arrives automatically.</div>'
-        +'<div class="section-title">Switch account</div>'+btns
+      return '<div style="font-size:13.5px;margin-bottom:10px">Currently using: <b style="color:var(--accent);font-size:15px">👤 '+esc(u.cur)+'</b>'+(u.pins[u.cur]?' 🔒':'')+'</div>'
+        +'<div class="muted" style="margin-bottom:8px">'+(function(){return 'Each account keeps its OWN routines, trades, money — and syncs to its OWN private file in your vault ('+baseOf(u)+' → sync.json · others → sync-<name>.json).';})()+' Open the same account name on any gadget and its data arrives automatically.</div>'
+        +'<div class="section-title">Switch account</div>'+rows
         +'<div class="row" style="margin-top:10px"><input type="text" id="lbNewUser" placeholder="＋ Account name (e.g. Work, Side B)" style="flex:1"><button class="btn small" onclick="lbAddUser()">Create / log in</button></div>'
         +'<div class="section-title" style="margin-top:12px">Privacy</div>'
-        +'<button class="btn ghost" onclick="lbSetPin()" style="width:100%">'+(u.pins[u.cur]?'🔑 Change / remove PIN for '+u.cur:'🔒 Set a 4-digit PIN for '+u.cur)+'</button>'
-        +'<div class="muted" style="font-size:11px;margin-top:8px">PIN locks this account on THIS device when the app opens. Connect Cloud Sync once per gadget — every account then follows you everywhere.</div>';
+        +'<button class="btn ghost" onclick="lbSetPin()" style="width:100%">'+(u.pins[u.cur]?'🔑 Change / remove PIN for '+esc(u.cur):'🔒 Set a 4-digit PIN for '+esc(u.cur))+'</button>'
+        +'<div class="muted" style="font-size:11px;margin-top:8px">✏️ renames any account — data moves with it (even your base account) · 🗑 deletes it from this device and your vault · your base account can be renamed but not deleted. PIN locks this account on THIS device when the app opens.</div>';
     }, bind:function(){
+      var self=this;
       document.querySelectorAll('[data-uact="pick"]').forEach(function(el){
         el.onclick=function(){ var n=el.dataset.un; var u=lbUsers(); if(n!==u.cur)lbSwitchUser(n); };
+      });
+      document.querySelectorAll('[data-uact="ren"]').forEach(function(el){
+        el.onclick=function(){ lbRenameUser(el.dataset.un); };
+      });
+      document.querySelectorAll('[data-uact="del"]').forEach(function(el){
+        el.onclick=function(){ lbDeleteUser(el.dataset.un); };
       });
       var inp=document.getElementById('lbNewUser');
       if(inp)inp.onkeydown=function(e){ if(e.key==='Enter')lbAddUser(); };
@@ -2770,7 +2838,7 @@ function boot(){
     }
   }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.0.2 ready';
+  if(mark)mark.textContent='\u2713 LB3.0.4 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -2841,7 +2909,7 @@ try{ var raw=localStorage.getItem(SK); if(raw){ var p=JSON.parse(raw); if(p&&typ
 function saveCfg(){ try{ localStorage.setItem(SK,JSON.stringify(cfg)); }catch(e){} }
 function b64e(s){ return btoa(unescape(encodeURIComponent(s))); }
 function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/\n/g,'')))); }
-function apiURL(){ var u=lbUsers(); var f=(u.cur==='Main')?(cfg.path||'sync.json'):('sync-'+uSlug(u.cur)+'.json'); return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+encodeURIComponent(f); }
+function apiURL(){ var u=lbUsers(); var f=(u.cur===baseOf(u))?(cfg.path||'sync.json'):('sync-'+uSlug(u.cur)+'.json'); return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+encodeURIComponent(f); }
 function ready(){ return !!(cfg.on&&cfg.owner&&cfg.repo&&cfg.token); }
 function toast(m){ try{ window.uiToast(m); }catch(e){} }
 
@@ -3174,5 +3242,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c2dde79eb08f5',t:'MTc4OTE4NzQ1MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c58404a82dd65',t:'MTc4OTE4OTE4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
