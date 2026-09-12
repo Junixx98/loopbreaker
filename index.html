@@ -136,7 +136,7 @@ label.fl{font-size:11px;color:var(--muted);display:block;margin:8px 0 3px}
 .chip{display:block;font-size:10px;border-radius:5px;padding:1px 5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0b0d12;font-weight:600}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal .dow{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}
-.cal .day{min-height:64px;background:var(--card2);border-radius:9px;padding:3px 4px;font-size:12px;cursor:pointer;position:relative;border:1px solid transparent;overflow:hidden}
+.cal .day{height:clamp(54px,12.5vw,76px);overflow:hidden;background:var(--card2);border-radius:9px;padding:3px 4px;font-size:12px;cursor:pointer;position:relative;border:1px solid transparent;overflow:hidden}
 .cal .day.empty{background:transparent;border:none;cursor:default}
 .cal .day.today{border-color:var(--accent)}
 .cal .day.holi{background:rgba(239,68,68,.08)}
@@ -258,11 +258,11 @@ body.light .wmap{background:#dfe8f5}
 </style>
 <style id="lbEvCss">.evNoteView{background:var(--card2);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:10px;max-height:38vh;overflow:auto;font-size:14.5px;line-height:1.55;word-wrap:break-word}.evNoteView img{max-width:100%;border-radius:8px}.evNoteView .ntask{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.evNoteView input[type="checkbox"]{accent-color:var(--accent);margin-top:3px}</style>
 <style id="lbCfrmCss">.cfrm{text-align:center;animation:cfrmPop .18s ease}.cfrmIc{font-size:36px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 4px 14px rgba(239,68,68,.35))}.cfrmT{font-weight:800;font-size:17px;margin-top:4px}.cfrmM{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.55;white-space:pre-line;word-wrap:break-word}@keyframes cfrmPop{from{transform:scale(.9) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}</style>
-<style id="lbCal2Css">.day{min-height:86px}.day .num{font-size:11px;opacity:.8}.evchip{display:block;font-size:10.5px;line-height:1.25;font-weight:600;padding:2px 5px;margin-top:3px;border-radius:5px;color:var(--text);cursor:pointer;overflow:hidden;word-break:break-word}</style>
+<style id="lbCal2Css">.day{min-height:86px}.day .num{font-size:11px;opacity:.8}.evchip{display:block;font-size:10.5px;line-height:1.25;font-weight:600;padding:2px 5px;margin-top:3px;border-radius:5px;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}</style>
 <style id="lbChartCss">.daychart{width:100%;height:70px;display:block;margin-top:4px}.lgdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}</style>
 </head>
 <body class="dark">
-<div id="lbSplash"><div class="lbGlow"></div><div class="lbOrbit lbO1"></div><div class="lbOrbit lbO2"></div><div class="lblogo"><svg viewBox="0 0 100 100" width="132" height="132" xmlns="http://www.w3.org/2000/svg"><rect x="20.60" y="32.85" width="58.80" height="34.30" rx="17.15" fill="none" stroke="#22c55e" stroke-width="10.29"/><polygon points="40.22,24.62 34.56,41.08 59.78,75.38 65.44,58.92" fill="#0c0e13"/><polygon points="55.38,24.62 47.68,41.08 55.38,75.38 47.68,58.92" fill="#0c0e13"/><polygon points="28.39,44.86 34.05,41.08 31.99,49.14" fill="#22c55e"/><polygon points="70.58,57.20 65.44,52.57 67.49,60.63" fill="#22c55e"/><polygon points="50.00,40.20 52.36,47.64 59.80,50.00 52.36,52.36 50.00,59.80 47.64,52.36 40.20,50.00 47.64,47.64" fill="#fbbf24" opacity="0.5"/><polygon points="50.00,44.51 51.32,48.68 55.49,50.00 51.32,51.32 50.00,55.49 48.68,51.32 44.51,50.00 48.68,48.68" fill="#fbbf24"/><circle cx="50.00" cy="50.00" r="1.30" fill="#ffffff" opacity="0.95"/></svg></div><div class="lbname">Loop<span>Breaker</span></div><div class="lbtag">Break the loop, one day at a time.</div><div class="lbq"><span class="lbqmark">❝</span><span id="lbSQ">Small steps, every day, forever.</span></div><div class="lbday" id="lbSDay">today</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 2.9 · offline-ready</div></div>
+<div id="lbSplash"><div class="lbGlow"></div><div class="lbOrbit lbO1"></div><div class="lbOrbit lbO2"></div><div class="lblogo"><svg viewBox="0 0 100 100" width="132" height="132" xmlns="http://www.w3.org/2000/svg"><rect x="20.60" y="32.85" width="58.80" height="34.30" rx="17.15" fill="none" stroke="#22c55e" stroke-width="10.29"/><polygon points="40.22,24.62 34.56,41.08 59.78,75.38 65.44,58.92" fill="#0c0e13"/><polygon points="55.38,24.62 47.68,41.08 55.38,75.38 47.68,58.92" fill="#0c0e13"/><polygon points="28.39,44.86 34.05,41.08 31.99,49.14" fill="#22c55e"/><polygon points="70.58,57.20 65.44,52.57 67.49,60.63" fill="#22c55e"/><polygon points="50.00,40.20 52.36,47.64 59.80,50.00 52.36,52.36 50.00,59.80 47.64,52.36 40.20,50.00 47.64,47.64" fill="#fbbf24" opacity="0.5"/><polygon points="50.00,44.51 51.32,48.68 55.49,50.00 51.32,51.32 50.00,55.49 48.68,51.32 44.51,50.00 48.68,48.68" fill="#fbbf24"/><circle cx="50.00" cy="50.00" r="1.30" fill="#ffffff" opacity="0.95"/></svg></div><div class="lbname">Loop<span>Breaker</span></div><div class="lbtag">Break the loop, one day at a time.</div><div class="lbq"><span class="lbqmark">❝</span><span id="lbSQ">Small steps, every day, forever.</span></div><div class="lbday" id="lbSDay">today</div><div class="lbtrack"><div class="lbbar" id="lbSB"></div></div><div class="lbver">LB 3.0 · offline-ready</div></div>
 <header>
   <h1>Loop<span>Breaker</span> <span class="pcsmall">2.0</span></h1>
   <button class="btn ghost small" id="btnFull" style="margin-left:auto" title="Fullscreen">⛶</button>
@@ -350,8 +350,34 @@ function showFatal(m){
 }
 window.onerror=function(msg,src,line){ showFatal(msg+(line?(' · line '+line):'')); return false; };
 // ================= STATE =================
+function lbUsers(){ try{ var u=JSON.parse(localStorage.getItem('lb_users')||'null'); if(!u||!u.list||!u.list.length){u={list:['Main'],cur:'Main',pins:{}}; localStorage.setItem('lb_users',JSON.stringify(u));} if(!u.pins)u.pins={}; return u; }catch(e){ return {list:['Main'],cur:'Main',pins:{}}; } }
+function lbSetUsers(u){ try{ localStorage.setItem('lb_users',JSON.stringify(u)); }catch(e){} }
+function uSlug(n){ return String(n||'Main').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'main'; }
+function uKey(){ var u=lbUsers(); return u.cur==='Main'?'loopbreaker_v1':('loopbreaker_v1_'+uSlug(u.cur)); }
+window.lbSwitchUser=function(name){
+  var u=lbUsers(); if(u.list.indexOf(name)===-1)return;
+  try{ save(); }catch(e){}
+  u.cur=name; lbSetUsers(u); location.reload();
+};
+window.lbAddUser=function(){
+  var inp=document.getElementById('lbNewUser'); if(!inp)return;
+  var name=(inp.value||'').trim(); if(!name){ uiToast('Type a name first'); return; }
+  var u=lbUsers();
+  var dup=u.list.some(function(x){return x.toLowerCase()===name.toLowerCase();});
+  if(dup){ uiToast('That account already exists — tap it to switch'); return; }
+  u.list.push(name); u.cur=name; lbSetUsers(u); location.reload();
+};
+window.lbSetPin=function(){
+  var u=lbUsers();
+  var v=prompt(u.pins[u.cur]?'Enter your NEW 4-digit PIN (leave empty to remove the lock):':'Enter a 4-digit PIN to lock this account on this device:');
+  if(v===null)return;
+  v=(v||'').trim();
+  if(!v){ delete u.pins[u.cur]; lbSetUsers(u); uiToast('🔓 Lock removed'); renderAll(); return; }
+  if(!/^\d{4}$/.test(v)){ uiToast('PIN must be exactly 4 digits'); return; }
+  u.pins[u.cur]=v; lbSetUsers(u); uiToast('🔒 PIN set — it locks when the app opens'); renderAll();
+};
 const KEY='loopbreaker_v1';
-const ACCENTS={green:'#4ade80',blue:'#38bdf8',purple:'#a78bfa',orange:'#fb923c'};
+const ACCENTS={green:'#4ade80',blue:'#38bdf8',purple:'#a78bfa',orange:'#fb923c',rose:'#f472b6',teal:'#2dd4bf',indigo:'#818cf8',amber:'#fbbf24',lime:'#a3e635',cyan:'#22d3ee'};
 const CATS={personal:['#38bdf8','Personal'],school:['#a78bfa','School'],work:['#fb923c','Work'],trading:['#4ade80','Trading'],money:['#fbbf24','Money'],news:['#f87171','News']};
 const def={
   identity:'I am becoming a disciplined forex trader.',
@@ -374,7 +400,7 @@ const def={
 };
 let S={};
 function load(){
-  try{ const r=localStorage.getItem(KEY); S=r?Object.assign(JSON.parse(JSON.stringify(def)),JSON.parse(r)):JSON.parse(JSON.stringify(def)); }
+  try{ const r=localStorage.getItem(uKey()); S=r?Object.assign(JSON.parse(JSON.stringify(def)),JSON.parse(r)):JSON.parse(JSON.stringify(def)); }
   catch(e){ S=JSON.parse(JSON.stringify(def)); }
   migrate();
 }
@@ -399,7 +425,7 @@ function migrate(){
   if(!Array.isArray(S.hiddenCats))S.hiddenCats=[];
   if(!Array.isArray(S.hiddenInc))S.hiddenInc=[];
 }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){ if(!window._saveWarned){ window._saveWarned=true; setTimeout(function(){ try{ uiToast('⚠️ This window cannot save — data resets on reload. Open the installed/deployed app to keep everything.'); }catch(_){}; },400); } } }
+function save(){ try{ localStorage.setItem(uKey(),JSON.stringify(S)); }catch(e){ if(!window._saveWarned){ window._saveWarned=true; setTimeout(function(){ try{ uiToast('⚠️ This window cannot save — data resets on reload. Open the installed/deployed app to keep everything.'); }catch(_){}; },400); } } }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function todayStr(d){ d=d||new Date(); const p=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function fmtPeso(n){ return '₱'+Number(n).toLocaleString('en-PH',{maximumFractionDigits:2}); }
@@ -464,8 +490,8 @@ const WTABS={
   cal:[{id:'calmain',t:'Calendar',ic:'calendar'}],
   routine:[{id:'rmain',t:'Routines',ic:'check'},{id:'weekrings',t:'Weekly Rings',ic:'chart'}],
   money:[{id:'msum',t:'Month summary',ic:'chart'},{id:'minc',t:'Log earning',ic:'upload'},{id:'mexp',t:'Log expense',ic:'download'},{id:'mbud',t:'Budget plan',ic:'wallet'},{id:'mgoal',t:'Savings goal',ic:'target'},{id:'mrec',t:'Recent activity',ic:'note'}],
-  trade:[{id:'tsess',t:'Session Clock',ic:'clock'},{id:'tover',t:'Account Overview',ic:'chart'},{id:'tcharts',t:'Charts',ic:'chart'},{id:'tprofit',t:'Profit charts',ic:'chart'},{id:'tcal',t:'Trading P&L Calendar',ic:'calendar'},{id:'tsym',t:'Symbol Table',ic:'note'},{id:'topen',t:'Open Trades',ic:'target'},{id:'tlog',t:'Log Trade',ic:'upload'},{id:'tjour',t:'Trade Journal',ic:'note'},{id:'tnews',t:'News Pins',ic:'news'},{id:'tpb',t:'Setup Playbook',ic:'note'},{id:'tmb',t:'Mistake Bank',ic:'flame'}],
-  more:[{id:'rev',t:'Auto Review',ic:'chart'},{id:'bak',t:'Backup & Transfer',ic:'download'},{id:'set',t:'Settings',ic:'gear'}]
+  trade:[{id:'tsess',t:'Session Clock',ic:'clock'},{id:'tover',t:'Account Overview',ic:'chart'},{id:'tcharts',t:'Charts',ic:'chart'},{id:'tprofit',t:'Profit charts',ic:'chart'},{id:'tcal',t:'Trading P&L Calendar',ic:'calendar'},{id:'tjpref',t:'Journal preferences',ic:'gear'},{id:'tsym',t:'Symbol Table',ic:'note'},{id:'topen',t:'Open Trades',ic:'target'},{id:'tlog',t:'Log Trade',ic:'upload'},{id:'tjour',t:'Trade Journal',ic:'note'},{id:'tnews',t:'News Pins',ic:'news'},{id:'tpb',t:'Setup Playbook',ic:'note'},{id:'tmb',t:'Mistake Bank',ic:'flame'}],
+  more:[{id:'users',t:'Accounts & Lock',ic:'gear'},{id:'rev',t:'Auto Review',ic:'chart'},{id:'bak',t:'Backup & Transfer',ic:'download'},{id:'set',t:'Settings',ic:'gear'}]
 };
 function wstate(tab){
   if(!S.widgets[tab])S.widgets[tab]={order:WTABS[tab].map(function(w){return w.id;}),cfg:{}};
@@ -596,6 +622,9 @@ function dayCompletion(date){
   return c/items.length;
 }
 let tInt=null, tLeft=25*60, tMode='work', tRun=false;
+function tPersist(){ try{ S.timer=S.timer||{}; if(tRun){ S.timer.run={mode:tMode,left:tLeft*1000,end:Date.now()+tLeft*1000}; } else { S.timer.run=(tLeft>0&&tLeft<dur(tMode))?{mode:tMode,left:tLeft*1000,end:0,paused:true}:null; } save(); }catch(e){} }
+function lbChime(long){ try{ var C=window.AudioContext||window.webkitAudioContext; if(!C)return; var c=new C(); var notes=long?[523,659,784,1047]:[784,988]; notes.forEach(function(f,i){ var o=c.createOscillator(),g=c.createGain(); o.type='sine'; o.frequency.value=f; o.connect(g); g.connect(c.destination); var t0=c.currentTime+i*0.18; g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.25,t0+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+0.5); o.start(t0); o.stop(t0+0.55); }); }catch(e){} }
+function lbNotify(txt){ try{ if(window.Notification&&Notification.permission==='granted')new Notification('LoopBreaker ⏰',{body:txt}); }catch(e){} }
 function tDisp(){ const m=Math.floor(tLeft/60), s=tLeft%60; const e=document.getElementById('timerDisp'); if(e)e.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
 function todayBodies(){
   return {
@@ -622,7 +651,9 @@ function todayBodies(){
     }},
     tcd:{ b:function(){
       var t=todayStr();
-      var cds=(S.countdowns||[]).slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+      var evs=(S.events2||[]).filter(function(e){ return e.inCd!==false && e.date>=t; })
+        .map(function(e){ return {id:e.id,date:e.date,title:e.title,fromEvent:true}; });
+      var cds=evs.concat(S.countdowns||[]).slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
       if(!cds.length)
         return '<span class="muted">No countdowns yet. Add big dates \u2014 then ask: "What will I have accomplished when these hit zero?"</span>'
           +'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
@@ -664,6 +695,13 @@ function todayBodies(){
         +'<div class="pcsmall" style="margin-top:8px">Focus sessions — last 7 days</div>'
         +dayChart(last7Labels().map(function(x){return {v:(S.pomo[x.d]||0),l:x.l};}));
     }, bind:function(){
+      (function(){ try{
+        var r=S.timer&&S.timer.run;
+        if(r&&r.end&&r.end>Date.now()&&!tRun){ tMode=r.mode; tLeft=Math.max(0,Math.round((r.end-Date.now())/1000)); tRun=true;
+          tInt=setInterval(function(){ tLeft--; if(tLeft<=0){ clearInterval(tInt); tRun=false; S.timer=S.timer||{}; S.timer.run=null; save(); lbChime(tMode==='work'); lbNotify(tMode==='work'?'Focus session complete — take a break! ☕':'Break over — back to work! 💪');
+            if(tMode==='work'){ var d=todayStr(); S.pomo[d]=(S.pomo[d]||0)+1; save(); tMode='break'; tLeft=(S.timer&&S.timer.break||5)*60; uiToast('✅ Focus session complete!'); } else { tMode='work'; tLeft=(S.timer&&S.timer.work||25)*60; uiToast('Break over. Back to work. 💪'); } tPersist(); renderAll(); return; } tDisp(); },1000);
+        } else if(r&&r.paused&&r.left>0&&!tRun){ tMode=r.mode; tLeft=Math.max(1,Math.round(r.left/1000)); }
+      }catch(e){} })();
       tDisp();
       const t=todayStr(), c=S.pomo[t]||0;
       document.getElementById('pomoCount').textContent=c>0?'🔥 '+c+' focus session'+(c===1?'':'s')+' today':'No sessions yet. One deep-work block beats zero.';
@@ -685,17 +723,21 @@ function todayBodies(){
         renderAll();
       }; });
       document.getElementById('btnTimerStart').onclick=function(){
-        if(tRun){ clearInterval(tInt); tRun=false; document.getElementById('btnTimerStart').textContent='▶ Start'; document.getElementById('timerLabel').textContent='Paused — come back.'; return; }
+        if(tRun){ clearInterval(tInt); tRun=false; document.getElementById('btnTimerStart').textContent='▶ Start'; document.getElementById('timerLabel').textContent='Paused — come back.'; tPersist(); return; }
         tRun=true; document.getElementById('btnTimerStart').textContent='⏸ Pause';
         document.getElementById('timerLabel').textContent=tMode==='work'?'Deep work — phone away 📵':'Break — breathe, stretch';
+        try{ if(window.Notification&&Notification.permission==='default')Notification.requestPermission(); }catch(e){}
+        tPersist();
         tInt=setInterval(function(){
           tLeft--;
           if(tLeft<=0){
-            clearInterval(tInt); tRun=false;
+            clearInterval(tInt); tRun=false; S.timer=S.timer||{}; S.timer.run=null; save();
+            lbChime(tMode==='work'); lbNotify(tMode==='work'?'Focus session complete — take a break! ☕':'Break over — back to work! 💪');
             if(tMode==='work'){
               const d=todayStr(); S.pomo[d]=(S.pomo[d]||0)+1; save();
               tMode='break'; tLeft=dur('break'); uiToast('✅ Focus session complete! Stand up, drink water.');
             } else { tMode='work'; tLeft=dur('work'); uiToast('Break over. Back to work. 💪'); }
+            tPersist();
             renderAll(); return;
           }
           tDisp();
@@ -706,7 +748,7 @@ function todayBodies(){
         tMode=tMode==='work'?'break':'work'; tLeft=dur(tMode); renderAll();
       };
       document.getElementById('btnTimerReset').onclick=function(){
-        clearInterval(tInt); tRun=false; tLeft=dur(tMode); renderAll();
+        clearInterval(tInt); tRun=false; tLeft=dur(tMode); S.timer=S.timer||{}; S.timer.run=null; save(); renderAll();
       };
     }},
     tsleep:{ b:function(){
@@ -781,7 +823,7 @@ S.sleepDraft={bed:null,wake:null}; save(); renderAll();
       return '<span class="muted">No upcoming events. Add some in the Calendar tab.</span>';
     }},
     tnote:{ b:function(){
-      const notes=(S.notesBoard||[]).slice().sort(function(a,b){return b.id.localeCompare(a.id);});
+      const notes=(S.notesBoard||[]).slice().sort(function(a,b){ return (b.upd||0)-(a.upd||0) || b.id.localeCompare(a.id); });
       return '<div class="muted" style="margin-bottom:8px;font-size:12px">Your scratchpad — trading rules, ideas, plans, anything detailed.</div>'
         +'<div class="row" style="margin-top:0"><input type="text" id="nbTitle" placeholder="Note title (e.g. My trading rules)">'
         +'<button class="btn" id="btnNbAdd" style="flex:.35">Add</button></div>'
@@ -951,6 +993,7 @@ function openDay(dateStr){ window.evPendingNote='';
     +(items.length?'<div class="muted" style="margin-bottom:10px">✅ Routine that day: '+dn+'/'+items.length+' ('+Math.round(dn/items.length*100)+'%)</div>':'')
     +'<div class="section-title">Events / activities</div>'+evHtml
     +'<div class="row"><input type="text" id="evTitle" placeholder="Add event, activity, or news…"></div>'
+    +'<div class="row" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="evInCd" checked style="accent-color:var(--accent);width:16px;height:16px"> 📌 Show this event in Countdown</label></div>'
     +'<div class="row" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);cursor:pointer"><input type="checkbox" id="evAllDay" style="accent-color:var(--accent);width:17px;height:17px" onchange="var f=this.checked;[\'evStart\',\'evEnd\'].forEach(function(ii){var e2=document.getElementById(ii);e2.disabled=f;e2.style.opacity=f?\'0.35\':\'\';});"> ☀️ Whole day (no time slots)</label></div>'
     +'<div class="row"><div><label class="fl">Start</label><input type="time" id="evStart"></div>'
     +'<div><label class="fl">End</label><input type="time" id="evEnd"></div>'
@@ -972,7 +1015,8 @@ window.addEvent2=function(dateStr){
     allDay:(document.getElementById('evAllDay')?document.getElementById('evAllDay').checked:false),
     start:(document.getElementById('evAllDay')&&document.getElementById('evAllDay').checked?'':document.getElementById('evStart').value||''),
     end:(document.getElementById('evAllDay')&&document.getElementById('evAllDay').checked?'':document.getElementById('evEnd').value||''),
-    impact:document.getElementById('evImpact').value||'',notes:window.evPendingNote||''});
+    impact:document.getElementById('evImpact').value||'',notes:window.evPendingNote||'',
+    inCd:(document.getElementById('evInCd')?document.getElementById('evInCd').checked:true)});
   window.evPendingNote='';
   save(); openDay(dateStr); renderAll(); window.uiToast('✅ Event added');
 };
@@ -998,8 +1042,17 @@ window.evDetail=function(id,dateStr){
     +(hasNote?'<div class="evNoteView">'+e.notes+'</div>':'<div class="muted" style="margin-bottom:10px">No note yet — tap below to attach one with rich text, checklists, colors, like the Notes tab.</div>')
     +'<div class="row"><button class="btn" onclick="openEventNoteEditor(\''+e.id+'\',\''+dateStr+'\',null)">🗒️ '+(hasNote?'Edit note':'Add note')+'</button>'
     +'<button class="btn ghost" onclick="openDay(\''+dateStr+'\')">‹ Day</button></div>'
+    +'<div class="row"><button class="btn ghost" onclick="toggleEvCd(\''+e.id+'\',\''+dateStr+'\')">'+(e.inCd===false?'📌 Countdown: HIDDEN — tap to show':'📌 Countdown: SHOWN — tap to hide')+'</button></div>'
     +'<div class="row"><button class="btn ghost" style="color:#f87171" onclick="delEvent2(\''+e.id+'\',\''+dateStr+'\')">🗑️ Delete event</button></div>');
   buzz();
+};
+window.restoreDefaultCats=function(){
+  S.hiddenCats=[]; S.hiddenInc=[]; save(); renderAll(); uiToast('♻️ Default categories restored');
+};
+window.toggleEvCd=function(id,dateStr){
+  var e=(S.events2||[]).find(function(x){return x.id===id;}); if(!e)return;
+  e.inCd=(e.inCd===false)?true:false; save(); evDetail(id,dateStr);
+  uiToast(e.inCd===false?'📌 Hidden from Countdown':'📌 Shown in Countdown');
 };
 window.evNoteNew=function(){
   window.openEventNoteEditor(null,null,function(h){
@@ -1116,6 +1169,7 @@ const EXP_CATS=['Food','Transport','Load/Data','School','Fun','Other'];
 const CATCOL={Food:'#4ade80',Transport:'#38bdf8','Load/Data':'#a78bfa',School:'#fb923c',Fun:'#f472b6',Other:'#94a3b8'};
 function allCats(){ return EXP_CATS.concat(S.extraCats||[]).filter(function(c){return (S.hiddenCats||[]).indexOf(c)===-1;}); }
 function catColor(c){
+  if(S.budgetCol&&S.budgetCol[c])return S.budgetCol[c];
   if(CATCOL[c])return CATCOL[c];
   let h=0; for(let i=0;i<c.length;i++)h=(h*31+c.charCodeAt(i))>>>0;
   return PALETTE[h%PALETTE.length]||'#94a3b8';
@@ -1157,6 +1211,10 @@ function moneyBodies(){
         +stat('<span class="neg">'+fmtPeso(exp)+'</span>','🧾 Spent · '+mo)
         +stat('<span class="'+(net>=0?'pos':'neg')+'">'+fmtPeso(net)+'</span>','Net')
         +stat(fmtPeso(wsum),'This week')+'</div>'
+        +(function(){ var F={daily:30,weekly:52/12,monthly:1,quarterly:1/3,semi:1/6,annual:1/12};
+            var recm=0; S.expenses.forEach(function(e){ if(e.freq&&e.freq!=='once'&&F[e.freq])recm+=e.amount*F[e.freq]; });
+            return '<div class="stat" style="margin:8px 0"><div style="font-size:11px;opacity:.7">🔁 Recurring monthly load</div><div class="v" style="font-size:15px">'+fmtPeso(recm)+'/mo</div></div>';
+          })()
         +msumChart(mo,inc,exp,net)
     }, bind:function(){}
     },
@@ -1181,13 +1239,15 @@ function moneyBodies(){
       return '<div class="row" style="margin-top:0"><input type="number" id="expAmt" placeholder="Amount ₱" min="0" step="0.01" style="flex:1.2">'
         +mkPick('expCat','Expense category','EXPCATS','Food')
         +'<button class="btn" id="btnAddExp" style="flex:.7">Add</button></div>'
-        +'<div class="row"><input type="date" id="expDate" value="'+todayStr()+'"><input type="text" id="expNote" placeholder="Note (optional)"></div>';
+        +'<div class="row"><input type="date" id="expDate" value="'+todayStr()+'"><input type="text" id="expNote" placeholder="Note (optional)"></div>'
+        +'<div class="row" style="margin-top:0"><label class="fl" style="flex:0 0 auto;align-self:center">🔁 How often?</label><select id="expFreq" style="flex:1"><option value="once">Once</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="semi">Semi-annual</option><option value="annual">Annual</option></select></div>';
     }, bind:function(){
       document.getElementById('btnAddExp').onclick=function(){
         const a=parseFloat(document.getElementById('expAmt').value);
         if(!a||a<=0)return uiToast('Enter an amount.');
         S.expenses.push({id:uid(),date:document.getElementById('expDate').value||todayStr(),amount:a,
-          cat:document.getElementById('expCat').value,note:document.getElementById('expNote').value.trim()});
+          cat:document.getElementById('expCat').value,note:document.getElementById('expNote').value.trim(),
+          freq:(document.getElementById('expFreq')||{}).value||'once'});
         save(); renderAll();
       };
     }},
@@ -1199,7 +1259,8 @@ function moneyBodies(){
         const bud=S.budgets[c]||0;
         const pct=bud>0?Math.min(100,Math.round(spent/bud*100)):0;
         html+='<div style="margin-bottom:10px"><div style="display:flex;gap:8px;align-items:center;font-size:13px">'
-          +'<span class="sw" style="background:'+catColor(c)+'"></span><b style="min-width:80px;flex:1">'+esc(c)+'</b>'
+          +'<input type="color" value="'+catColor(c)+'" data-bcol="'+esc(c)+'" title="Category color" style="width:26px;height:26px;padding:0;border:none;background:none;border-radius:50%">'
+          +'<b style="min-width:80px;flex:1">'+esc(c)+'</b>'
           +'<span class="muted">'+fmtPeso(spent)+(bud>0?' / '+fmtPeso(bud):'')+'</span>'
           +'<input type="number" placeholder="₱ budget" data-bud="'+esc(c)+'" value="'+(bud||'')+'" style="max-width:95px;padding:5px 8px;font-size:12px">'
           +'<button class="x" data-bdel="'+esc(c)+'" title="Delete category">×</button></div>'
@@ -1211,6 +1272,10 @@ function moneyBodies(){
         +'<button class="btn small" id="btnNewCat" style="flex:.35">Add</button></div>';
       return html;
     }, bind:function(){
+      document.querySelectorAll('[data-bcol]').forEach(function(el){ el.oninput=function(){
+        S.budgetCol=S.budgetCol||{}; S.budgetCol[el.dataset.bcol]=el.value; save();
+        var sw=el.parentElement.querySelector('.sw'); if(sw)sw.style.background=el.value;
+      }; });
       document.querySelectorAll('[data-bud]').forEach(function(el){
         el.onchange=function(){ S.budgets[el.dataset.bud]=parseFloat(el.value)||0; save(); renderAll(); };
       });
@@ -1264,7 +1329,7 @@ delete S.budgets[c];
     }},
     mrec:{ b:function(){
       const rows=[].concat(
-        S.expenses.map(function(e){return {d:e.date,amt:-e.amount,tag:e.cat,note:e.note,id:e.id,kind:'exp',col:catColor(e.cat)};}),
+        S.expenses.map(function(e){return {d:e.date,amt:-e.amount,tag:e.cat+(e.freq&&e.freq!=='once'?' 🔁'+({daily:'daily',weekly:'weekly',monthly:'monthly',quarterly:'3-mo',semi:'6-mo',annual:'yearly'})[e.freq]:''),note:e.note,id:e.id,kind:'exp',col:catColor(e.cat)};}),
         S.income.map(function(e){return {d:e.date,amt:e.amount,tag:e.src,note:e.note,id:e.id,kind:'inc',col:'#4ade80'};})
       ).sort(function(a,b){return b.d.localeCompare(a.d)||b.id.localeCompare(a.id);}).slice(0,20);
       return rows.map(function(r){
@@ -1408,6 +1473,25 @@ function gaugeSvg(wr){
 let tCalCursor=new Date(); tCalCursor.setDate(1);
 function tradeBodiesA(){
   return {
+    tjpref:{ b:function(){
+      var p=S.tradePref=S.tradePref||{session:'Asia',prompt:'Setup / emotion / lesson in one line?'};
+      return '<div class="muted" style="margin-bottom:8px">Defaults the Trade Journal uses every time. Change them whenever your strategy evolves.</div>'
+        +'<div class="row"><div style="flex:1"><label class="fl">Main session</label><select id="jpSess" style="width:100%">'
+        +['Asia','London','New York'].map(function(x){return '<option'+(p.session===x?' selected':'')+'>'+x+'</option>';}).join('')+'</select></div></div>'
+        +'<label class="fl" style="display:block;margin-top:10px">Journal prompt (pre-fills each trade note)</label>'
+        +'<input type="text" id="jpPrompt" value="'+String(p.prompt||'').replace(/"/g,'&quot;')+'" style="width:100%">'
+        +'<div class="muted" style="font-size:11px;margin-top:8px">📸 Tap any trade screenshot to view it full-size.</div>';
+    }, bind:function(){
+      var p=S.tradePref=S.tradePref||{session:'Asia',prompt:'Setup / emotion / lesson in one line?'};
+      ['jpSess','jpPrompt'].forEach(function(id){
+        var el=document.getElementById(id); if(!el)return;
+        el.onchange=function(){
+          p.session=document.getElementById('jpSess').value;
+          p.prompt=document.getElementById('jpPrompt').value;
+          save(); uiToast('✅ Journal preferences saved');
+        };
+      });
+    }},
     tsess:{ b:function(){
       return '<div id="scUtc" class="scutc">--:--:-- UTC</div>'
         +'<div id="scLocal" class="pcsmall">Local --:-- - Asia/Manila</div>'
@@ -1865,6 +1949,25 @@ S.playbook=S.playbook.filter(function(p){return p.id!==el.dataset.pbdel;}); save
 // ================= MORE TAB =================
 function moreBodies(){
   return {
+    users:{ b:function(){
+      var u=lbUsers();
+      var btns=u.list.map(function(n){
+        var curN=u.cur===n;
+        return '<button class="btn '+(curN?'':'ghost')+'" data-uact="pick" data-un="'+String(n).replace(/"/g,'&quot;')+'" style="width:100%;margin-bottom:6px'+(curN?';border-color:var(--accent);color:var(--accent)':'')+'">'+(curN?'✓ ':'')+'👤 '+n+(u.pins[n]?' 🔒':'')+(curN?' — active':'')+'</button>';
+      }).join('');
+      return '<div class="muted" style="margin-bottom:8px">One app, many lives. Each account keeps its OWN routines, trades, money — and syncs to its OWN private file in your vault (Main → sync.json · others → sync-<name>.json). Open the same account name on any gadget and its data arrives automatically.</div>'
+        +'<div class="section-title">Switch account</div>'+btns
+        +'<div class="row" style="margin-top:10px"><input type="text" id="lbNewUser" placeholder="＋ Account name (e.g. Work, Side B)" style="flex:1"><button class="btn small" onclick="lbAddUser()">Create / log in</button></div>'
+        +'<div class="section-title" style="margin-top:12px">Privacy</div>'
+        +'<button class="btn ghost" onclick="lbSetPin()" style="width:100%">'+(u.pins[u.cur]?'🔑 Change / remove PIN for '+u.cur:'🔒 Set a 4-digit PIN for '+u.cur)+'</button>'
+        +'<div class="muted" style="font-size:11px;margin-top:8px">PIN locks this account on THIS device when the app opens. Connect Cloud Sync once per gadget — every account then follows you everywhere.</div>';
+    }, bind:function(){
+      document.querySelectorAll('[data-uact="pick"]').forEach(function(el){
+        el.onclick=function(){ var n=el.dataset.un; var u=lbUsers(); if(n!==u.cur)lbSwitchUser(n); };
+      });
+      var inp=document.getElementById('lbNewUser');
+      if(inp)inp.onkeydown=function(e){ if(e.key==='Enter')lbAddUser(); };
+    }},
     rev:{ b:function(){
       return '<div class="row" style="margin-top:0"><button class="btn ghost" id="btnWeek">Last 7 days</button><button class="btn ghost" id="btnMonth">Last 30 days</button></div>'
         +'<div id="reviewBox" style="margin-top:12px"></div>';
@@ -1960,7 +2063,7 @@ S.widgets={}; S.editMode=false; save(); renderAll();
       document.getElementById('btnWipe').onclick=function(){
         uiConfirm('Erase ALL data? This cannot be undone.',function(){
 uiConfirm('Really? Trades, journal, habits, budget — everything gone?',function(){
-localStorage.removeItem(KEY); load(); applyTheme(); renderAll();
+localStorage.removeItem(uKey()); load(); applyTheme(); renderAll();
         uiToast('Clean slate. Day one starts now.');
 });});};
     }}
@@ -2143,6 +2246,25 @@ function readImgs(fileInput,cb){
     rd.readAsDataURL(f);
   });
   fileInput.value='';
+}
+window.viewImg=function(kind,ownerId,i){
+  var rec=(S.trades||[]).concat(S.openTrades||[]).filter(function(t){return t.id===ownerId;})[0];
+  var arr=rec&&(rec.imgs||rec.shots);
+  if(!arr||!arr[i]){ uiToast('Image not found'); return; }
+  var old=document.getElementById('lbImgView'); if(old)old.remove();
+  var ov=document.createElement('div'); ov.id='lbImgView';
+  ov.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:14px;cursor:zoom-out';
+  ov.innerHTML='<img src="'+arr[i]+'" style="max-width:100%;max-height:92vh;border-radius:12px" alt="preview">';
+  ov.onclick=function(){ ov.remove(); };
+  document.body.appendChild(ov);
+};
+function relUpd(t){
+  var d=Date.now()-t;
+  if(d<60e3)return 'just now';
+  if(d<3600e3)return Math.floor(d/60e3)+' min ago';
+  if(d<86400e3)return Math.floor(d/3600e3)+' h ago';
+  if(d<7*86400e3)return Math.floor(d/86400e3)+' d ago';
+  return new Date(t).toLocaleDateString();
 }
 function thumbsHtml(arr,kind,ownerId){
   return (arr||[]).map(function(u,i){
@@ -2344,7 +2466,7 @@ window.openPicker=function(title,opts,sel,cb){
   ov.className='modal-bg on'; ov.id='pickOverlay'; ov.style.zIndex='6000';
   ov.innerHTML='<div class="modal" id="pickBody">'
     +'<h3>'+esc(title)+'</h3>'
-    +(opts.some(function(o){return o.custom;})?'<div class="muted" style="font-size:11px;margin:-2px 0 8px">✏️ rename · 🗑 remove any item · ★ = made by you</div>':'')
+    +(opts.some(function(o){return o.custom;})?'<div class="muted" style="font-size:11px;margin:-2px 0 8px">✏️ rename · 🗑 remove any item · ★ = made by you</div>'+(function(){ var hid=(S.hiddenCats||[]).concat(S.hiddenInc||[]); return hid.length?'<button class="btn ghost small" style="width:100%;margin-bottom:8px" onclick="restoreDefaultCats()">♻️ Bring back removed defaults ('+hid.length+')</button>':''; })()+'':'')
     +(opts.map(function(o,i){
       return '<button class="pickopt" data-i="'+i+'"'+(String(o.v)===String(sel)?' style="border-color:var(--accent)"':'')+'>'
         +esc(o.l)+(o.custom?'<span class="pkAct" data-pkde="'+i+'" style="float:right;margin-left:8px">🗑</span><span class="pkAct" data-pkre="'+i+'" style="float:right;margin-left:10px">✏️</span>':'')+(String(o.v)===String(sel)?' <span style="color:var(--accent);float:right">✓</span>':'')+'</button>';
@@ -2478,7 +2600,7 @@ function stripHtml(h){ const d=document.createElement('div'); d.innerHTML=h||'';
 let curNoteId=null, neOpenedAt=new Date();
 function notesBodies(){
   return { nmain:{ b:function(){
-    const notes=(S.notesBoard||[]).slice().sort(function(a,b){return b.id.localeCompare(a.id);});
+    const notes=(S.notesBoard||[]).slice().sort(function(a,b){ return (b.upd||0)-(a.upd||0) || b.id.localeCompare(a.id); });
     let html='<button class="btn" id="btnNewNote" style="width:100%;padding:15px;font-size:15px">＋ New note</button>';
     if(!notes.length)html+='<div class="muted center" style="margin-top:26px;font-size:14px">📝 No notes yet.<br>Ideas, trading plans, rules, journal entries — tap "New note" and write with rich formatting.</div>';
     else html+='<div style="margin-top:12px">'+notes.map(function(n){
@@ -2490,7 +2612,7 @@ function notesBodies(){
         +'<div class="top"><span style="flex:1;font-size:15px"><b>'+esc(n.title)+'</b></span>'
         +'<button class="x" data-ndel="'+n.id+'">×</button></div>'
         +(plain?'<div class="sub nprev">'+esc(plain.slice(0,90))+(plain.length>90?'…':'')+'</div>':'<div class="sub">—</div>')
-        +'<div class="sub">'+n.date+' · '+chars+' character'+(chars===1?'':'s')+(tasks?' · ☑ '+doneT+'/'+tasks+' tasks':'')+'</div></div>';
+        +'<div class="sub">'+n.date+' · '+chars+' character'+(chars===1?'':'s')+(tasks?' · ☑ '+doneT+'/'+tasks+' tasks':'')+(n.upd?' · <span style="color:var(--accent);font-weight:700">✏️ edited '+relUpd(n.upd)+'</span>':'')+'</div></div>';
     }).join('')+'</div>';
     return html;
   }, bind:function(){
@@ -2547,9 +2669,9 @@ window.saveNoteEd=function(){
   if(!S.notesBoard)S.notesBoard=[];
   if(curNoteId){
     const n=S.notesBoard.find(function(x){return x.id===curNoteId;});
-    if(n){ n.title=title; n.bodyHtml=html; }
+    if(n){ n.title=title; n.bodyHtml=html; n.upd=Date.now(); }
   } else {
-    S.notesBoard.push({id:uid(),date:todayStr(),title:title,bodyHtml:html,body:''});
+    S.notesBoard.push({id:uid(),date:todayStr(),title:title,bodyHtml:html,body:'',upd:Date.now()});
   }
   save(); window.closeNoteEditor(); window.uiToast('🗒️ Note saved'); buzz();
 };
@@ -2623,8 +2745,34 @@ function boot(){
   document.querySelectorAll('[data-ns]').forEach(function(b){ b.onclick=function(){ setFontSize(parseInt(b.dataset.ns),b); }; });
   document.querySelectorAll('[data-nc]').forEach(function(b){ b.onclick=function(){ setFontColor(b.dataset.nc,b); }; });
 })();
+  (function(){
+    var u=lbUsers();
+    if(!u.pins[u.cur])return;
+    var ov=document.createElement('div'); ov.id='lbPinLock';
+    ov.style.cssText='position:fixed;inset:0;z-index:99999;background:#0b0f16;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:inherit';
+    ov.innerHTML='<div style="font-size:34px">🔒</div>'
+      +'<div style="color:#e5e7eb;font-size:16px;font-weight:800">Enter PIN for '+u.cur+'</div>'
+      +'<input id="lbPinIn" type="password" inputmode="numeric" maxlength="4" autocomplete="off" style="width:150px;text-align:center;font-size:26px;letter-spacing:10px;padding:10px;border-radius:12px;border:1px solid #2a3444;background:#141a24;color:#e5e7eb">'
+      +'<div id="lbPinErr" style="color:#f87171;font-size:12px;min-height:16px"></div>';
+    document.body.appendChild(ov);
+    var inp=document.getElementById('lbPinIn'); setTimeout(function(){ try{inp.focus();}catch(e){} },300);
+    function tryPin(){
+      if(inp.value===u.pins[u.cur]){ ov.remove(); }
+      else { document.getElementById('lbPinErr').textContent='Wrong PIN — try again'; inp.value=''; }
+    }
+    inp.oninput=function(){ if(inp.value.length>=4)tryPin(); };
+    inp.onkeydown=function(e){ if(e.key==='Enter')tryPin(); };
+  })();
+  try{
+    var _r=S.timer&&S.timer.run;
+    if(_r&&_r.end&&_r.end<=Date.now()){
+      if(_r.mode==='work'){ var _d=todayStr(); S.pomo[_d]=(S.pomo[_d]||0)+1; }
+      S.timer.run=null; save();
+      setTimeout(function(){ lbChime(true); try{ uiToast('⏰ Your '+(_r.mode==='work'?'focus session':'break')+' finished while the app was closed!'); }catch(e){} },1200);
+    }
+  }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB2.9 ready';
+  if(mark)mark.textContent='\u2713 LB3.0.1 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -2695,7 +2843,7 @@ try{ var raw=localStorage.getItem(SK); if(raw){ var p=JSON.parse(raw); if(p&&typ
 function saveCfg(){ try{ localStorage.setItem(SK,JSON.stringify(cfg)); }catch(e){} }
 function b64e(s){ return btoa(unescape(encodeURIComponent(s))); }
 function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/\n/g,'')))); }
-function apiURL(){ return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+encodeURIComponent(cfg.path||'sync.json'); }
+function apiURL(){ var u=lbUsers(); var f=(u.cur==='Main')?(cfg.path||'sync.json'):('sync-'+uSlug(u.cur)+'.json'); return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+encodeURIComponent(f); }
 function ready(){ return !!(cfg.on&&cfg.owner&&cfg.repo&&cfg.token); }
 function toast(m){ try{ window.uiToast(m); }catch(e){} }
 
@@ -2878,7 +3026,7 @@ function pushNow(cb){
     var t=Date.now();
     var sig; try{ sig=JSON.stringify(S); }catch(e){ sig=null; }
     if(sig!==null&&(sig===st.lastRemoteSig||sig===st.lastPushSig)){ st.pending=false; st.lastSync=Date.now(); saveCfg(); st.busy=false; if(cb)cb(true); return; } // nothing new vs cloud — skip upload (kills echo churn)
-    var payload={v:1,savedAt:t,dev:cfg.dev||'device',data:S};
+    var payload={v:1,savedAt:t,dev:cfg.dev||'device',user:(lbUsers().cur||'Main'),data:S};
     ghPut(JSON.stringify(payload),sha).then(function(r){
       if(r.status===409||r.status===422){ // sha moved -> pull-merge then retry once
         st.busy=false;
@@ -3028,5 +3176,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c0fc96c6f04c0',t:'MTc4OTE4NjIxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
