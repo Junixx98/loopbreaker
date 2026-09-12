@@ -478,7 +478,26 @@ function migrate(){
   if(!Array.isArray(S.customCats))S.customCats=[];
   if(!Array.isArray(S.extraInc))S.extraInc=[];
   if(!Array.isArray(S.checkSections)||!S.checkSections.length)S.checkSections=[{key:'morning',name:'🌅 Morning'},{key:'afternoon',name:'☀️ Afternoon'},{key:'night',name:'🌙 Night'}];
-  S.checkSections.forEach(function(g){ if(g&&g.key&&!S.checklist[g.key])S.checklist[g.key]=[]; });
+  reconcSections();
+}
+function reconcSections(){
+  try{
+    if(!S.checklist||typeof S.checklist!=='object'||Array.isArray(S.checklist))S.checklist={};
+    if(!Array.isArray(S.checkSections)||!S.checkSections.length)S.checkSections=[{key:'morning',name:'🌅 Morning'},{key:'afternoon',name:'☀️ Afternoon'},{key:'night',name:'🌙 Night'}];
+    var out=[],seenK={},seenN={};
+    S.checkSections.forEach(function(g){
+      if(!g||!g.key)return;
+      if(seenK[g.key])return; seenK[g.key]=1;
+      var nm=String(g.name||'').toLowerCase();
+      if(nm&&seenN[nm]){ var t=seenN[nm],arr=Array.isArray(S.checklist[g.key])?S.checklist[g.key]:[];
+        S.checklist[t.key]=Array.isArray(S.checklist[t.key])?S.checklist[t.key]:[];
+        arr.forEach(function(x){ if(!S.checklist[t.key].some(function(y){return y.id===x.id;}))S.checklist[t.key].push(x); });
+        delete S.checklist[g.key]; return; }
+      if(nm)seenN[nm]=g; out.push(g);
+    });
+    S.checkSections=out;
+    S.checkSections.forEach(function(g){ if(!Array.isArray(S.checklist[g.key]))S.checklist[g.key]=[]; });
+  }catch(e){}
   if(!Array.isArray(S.hiddenCats))S.hiddenCats=[];
   if(!Array.isArray(S.hiddenInc))S.hiddenInc=[];
 }
@@ -1160,6 +1179,7 @@ function routineBodies(){
         // ADD INPUT AT TOP
         +'<div class="row" style="margin-top:0"><input type="text" placeholder="＋ Add '+label.replace(/^[^ ]+ /,'')+' habit…" id="rin-'+key+'">'
         +'<button class="btn small" data-radd="'+key+'" style="flex:.35">Add</button></div>';
+      if(!S.checklist[key])S.checklist[key]=[];
       S.checklist[key].forEach(function(it){
         const on=!!ds[it.id], st=itemStreak(it.id);
         html+='<div class="list-item">'
@@ -1181,7 +1201,7 @@ function routineBodies(){
     }; });
     document.querySelectorAll('[data-rdel]').forEach(function(el){ el.onclick=function(){
       uiConfirm('Delete this habit?',function(){
-S.checklist[el.dataset.rsec]=S.checklist[el.dataset.rsec].filter(function(i){return i.id!==el.dataset.rdel;});
+S.checklist[el.dataset.rsec]=(S.checklist[el.dataset.rsec]||[]).filter(function(i){return i.id!==el.dataset.rdel;});
       save(); renderAll();
 });}; });
     document.querySelectorAll('[data-radd]').forEach(function(el){ el.onclick=function(){
@@ -2838,7 +2858,7 @@ function boot(){
     }
   }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.0.4 ready';
+  if(mark)mark.textContent='\u2713 LB3.0.5 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3024,6 +3044,7 @@ function mergeRemote(blob,mode){ // mode: 'auto' | 'cloud' | 'device' | 'union'
     if(changed)taken.push(k);
   });
   if(mode!=='device'){ for(var k2 in kt){ if(S._kt[k2]===undefined)S._kt[k2]=kt[k2]; } }
+  reconcSections();
   return {taken:taken,clash:clash};
 }
 
@@ -3242,5 +3263,6 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c58404a82dd65',t:'MTc4OTE4OTE4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c84852ec9d44c',t:'MTc4OTE5MDk5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+</body>
 </html>

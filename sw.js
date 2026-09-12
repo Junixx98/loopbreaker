@@ -1,6 +1,6 @@
 'use strict';
 /* LoopBreaker offline brain: cache-first so the app opens with zero signal. */
-var CACHE = 'loopbreaker-v16'; // v9 = never intercept GitHub API / cross-origin; nav network-first
+var CACHE = 'loopbreaker-v17'; // v9 = never intercept GitHub API / cross-origin; nav network-first
 var ASSETS = [
   './',
   './index.html',
