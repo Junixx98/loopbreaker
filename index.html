@@ -1184,16 +1184,13 @@ function incomeOn(month,dateStr){
 }
 function monthIncome(month){
   let sum=0;
-  const [yy,mm]=month.split('-').map(Number);
-  const lastDay=new Date(yy,mm,0).getDate();
+  const F={daily:30,weekly:52/12,monthly:1,quarterly:1/3,semi:1/6,annual:1/12};
   S.income.forEach(function(e){
-    if(e.date.slice(0,7)===month)sum+=e.amount;
-    else if(e.recur==='monthly'){
-      const baseDay=parseInt(e.date.slice(8));
-      const effDay=Math.min(baseDay,lastDay);
-      const effDate=month+'-'+String(effDay).padStart(2,'0');
-      if(e.date<=effDate)sum+=e.amount;
-    }
+    if(e.date.slice(0,7)===month){ sum+=e.amount; return; }
+    var f=e.freq||(e.recur==='monthly'?'monthly':'once');
+    if(f==='once')return;
+    if(e.date.slice(0,7)>month)return;
+    sum+=e.amount*(F[f]||1);
   });
   return sum;
 }
@@ -1224,14 +1221,14 @@ function moneyBodies(){
         +'<button class="btn" id="btnAddInc" style="flex:.6">Add</button></div>'
         +'<div class="row"><input type="date" id="incDate" value="'+todayStr()+'">'
         +'<input type="text" id="incNote" placeholder="Note (e.g. weekly pay)"></div>'
-        +'<label style="font-size:12px;color:var(--muted);display:block;margin-top:8px"><input type="checkbox" id="incRecur" style="width:auto"> 🔁 Repeats monthly (e.g. salary/allowance)</label>';
+        +'<div class="row" style="margin-top:0"><label class="fl" style="flex:0 0 auto;align-self:center">🔁 How often?</label>'+mkPick('incFreq','How often?','FREQS','once','📅 Once')+'</div>';
     }, bind:function(){
       document.getElementById('btnAddInc').onclick=function(){
         const a=parseFloat(document.getElementById('incAmt').value);
         if(!a||a<=0)return uiToast('Enter an amount.');
         S.income.push({id:uid(),date:document.getElementById('incDate').value||todayStr(),amount:a,
           src:document.getElementById('incSrc').value,note:document.getElementById('incNote').value.trim(),
-          recur:document.getElementById('incRecur').checked?'monthly':null});
+          freq:(document.getElementById('incFreq')||{}).value||'once'});
         save(); renderAll();
       };
     }},
@@ -1240,7 +1237,7 @@ function moneyBodies(){
         +mkPick('expCat','Expense category','EXPCATS','Food')
         +'<button class="btn" id="btnAddExp" style="flex:.7">Add</button></div>'
         +'<div class="row"><input type="date" id="expDate" value="'+todayStr()+'"><input type="text" id="expNote" placeholder="Note (optional)"></div>'
-        +'<div class="row" style="margin-top:0"><label class="fl" style="flex:0 0 auto;align-self:center">🔁 How often?</label><select id="expFreq" style="flex:1"><option value="once">Once</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="semi">Semi-annual</option><option value="annual">Annual</option></select></div>';
+        +'<div class="row" style="margin-top:0"><label class="fl" style="flex:0 0 auto;align-self:center">🔁 How often?</label>'+mkPick('expFreq','How often?','FREQS','once','📅 Once')+'</div>';
     }, bind:function(){
       document.getElementById('btnAddExp').onclick=function(){
         const a=parseFloat(document.getElementById('expAmt').value);
@@ -1330,7 +1327,7 @@ delete S.budgets[c];
     mrec:{ b:function(){
       const rows=[].concat(
         S.expenses.map(function(e){return {d:e.date,amt:-e.amount,tag:e.cat+(e.freq&&e.freq!=='once'?' 🔁'+({daily:'daily',weekly:'weekly',monthly:'monthly',quarterly:'3-mo',semi:'6-mo',annual:'yearly'})[e.freq]:''),note:e.note,id:e.id,kind:'exp',col:catColor(e.cat)};}),
-        S.income.map(function(e){return {d:e.date,amt:e.amount,tag:e.src,note:e.note,id:e.id,kind:'inc',col:'#4ade80'};})
+        S.income.map(function(e){return {d:e.date,amt:e.amount,tag:e.src+(function(){ var f=e.freq||(e.recur==='monthly'?'monthly':'once'); return (f&&f!=='once')?' 🔁'+({daily:'daily',weekly:'weekly',monthly:'monthly',quarterly:'3-mo',semi:'6-mo',annual:'yearly'})[f]:''; })(),note:e.note,id:e.id,kind:'inc',col:'#4ade80'};})
       ).sort(function(a,b){return b.d.localeCompare(a.d)||b.id.localeCompare(a.id);}).slice(0,20);
       return rows.map(function(r){
         return '<div class="list-item"><span class="sw" style="background:'+r.col+'"></span>'
@@ -2341,6 +2338,7 @@ window.savePbNotes=function(id){
 // ================= INTERACTIVE UI: pickers, prompts, toasts, haptics =================
 function buzz(){ try{ if(navigator.vibrate)navigator.vibrate(9); }catch(e){} }
 window.OPT={
+  FREQS:[{v:'once',l:'📅 Once'},{v:'daily',l:'🌞 Daily'},{v:'weekly',l:'📆 Weekly'},{v:'monthly',l:'🗓️ Monthly'},{v:'quarterly',l:'🍂 Quarterly'},{v:'semi',l:'🌗 Semi-annual'},{v:'annual',l:'🎂 Annual'}],
   DIRS:['Buy','Sell'],
   EMOS:['Calm','FOMO','Revenge','Fear','Bored','Greedy'],
   GRADES:['A+','A','B','C','Avoid'],
@@ -2772,7 +2770,7 @@ function boot(){
     }
   }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.0.1 ready';
+  if(mark)mark.textContent='\u2713 LB3.0.2 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3176,5 +3174,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c0fc96c6f04c0',t:'MTc4OTE4NjIxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c2dde79eb08f5',t:'MTc4OTE4NzQ1MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
