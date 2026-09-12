@@ -2094,11 +2094,9 @@ function moreBodies(){
       };
     }},
     set:{ b:function(){
-      let html='<div class="section-title" style="margin-top:0">Accent color</div><div class="row" style="margin-top:0">';
-      Object.keys(ACCENTS).forEach(function(k){
-        html+='<button class="btn ghost" data-acc="'+k+'" style="'+(S.accent===k?'border-color:'+ACCENTS[k]+';color:'+ACCENTS[k]:'')+'"><span class="sw" style="background:'+ACCENTS[k]+'"></span>'+k+'</button>';
-      });
-      html+='</div>'
+      let html='<div class="section-title" style="margin-top:0">Accent color</div><div class="row" style="margin-top:0">'
+        +mkPick('accentSel','🎨 Accent color','ACCENTLIST',S.accent,S.accent)
+        +'</div>'
         +'<div class="section-title">🧹 Dashboard customization</div>'
         +'<div class="muted" style="margin-bottom:8px">Clean mode is ON by default — widgets show only their title and a － button. Tap <b>✏️ Customize layout</b> (top-right of any section) to resize <b>S/M/L</b>, reorder <b>▲▼</b>, collapse, or hide widgets.</div>';
       const hidden=[];
@@ -2141,9 +2139,10 @@ function moreBodies(){
         uiConfirm('Reset all widget sizes, order, and visibility back to default?',function(){
 S.widgets={}; S.editMode=false; save(); renderAll();
 });};
-      document.querySelectorAll('[data-acc]').forEach(function(el){ el.onclick=function(){
-        S.accent=el.dataset.acc; save(); applyTheme(); renderAll();
-      }; });
+      var asel=document.getElementById('accentSel');
+      if(asel){ asel.dataset.live='1'; asel.onchange=function(){ S.accent=asel.value||'green'; save(); applyTheme(); renderAll(); }; }
+      var abtn=document.getElementById('accentSel-btn');
+      if(abtn){ var asp=abtn.querySelector('span'); if(asp){ asp.style.color=ACCENTS[S.accent]||ACCENTS.green; asp.textContent='● '+S.accent; } }
       document.getElementById('btnTheme2').onclick=function(){ S.dark=!S.dark; save(); applyTheme(); };
       document.getElementById('btnWipe').onclick=function(){
         uiConfirm('Erase ALL data? This cannot be undone.',function(){
@@ -2427,6 +2426,7 @@ window.savePbNotes=function(id){
 function buzz(){ try{ if(navigator.vibrate)navigator.vibrate(9); }catch(e){} }
 window.OPT={
   FREQS:[{v:'once',l:'📅 Once'},{v:'daily',l:'🌞 Daily'},{v:'weekly',l:'📆 Weekly'},{v:'monthly',l:'🗓️ Monthly'},{v:'quarterly',l:'🍂 Quarterly'},{v:'semi',l:'🌗 Semi-annual'},{v:'annual',l:'🎂 Annual'}],
+  ACCENTLIST:function(){ return Object.keys(ACCENTS).map(function(k){ return {v:k,l:k,c:ACCENTS[k]}; }); },
   DIRS:['Buy','Sell'],
   EMOS:['Calm','FOMO','Revenge','Fear','Bored','Greedy'],
   GRADES:['A+','A','B','C','Avoid'],
@@ -2555,6 +2555,7 @@ window.openPicker=function(title,opts,sel,cb){
     +(opts.some(function(o){return o.custom;})?'<div class="muted" style="font-size:11px;margin:-2px 0 8px">✏️ rename · 🗑 remove any item · ★ = made by you</div>'+(function(){ var hid=(S.hiddenCats||[]).concat(S.hiddenInc||[]); return hid.length?'<button class="btn ghost small" style="width:100%;margin-bottom:8px" onclick="restoreDefaultCats()">♻️ Bring back removed defaults ('+hid.length+')</button>':''; })()+'':'')
     +(opts.map(function(o,i){
       return '<button class="pickopt" data-i="'+i+'"'+(String(o.v)===String(sel)?' style="border-color:var(--accent)"':'')+'>'
+        +(o.c?'<span class="sw" style="background:'+o.c+'"></span>':'')
         +esc(o.l)+(o.custom?'<span class="pkAct" data-pkde="'+i+'" style="float:right;margin-left:8px">🗑</span><span class="pkAct" data-pkre="'+i+'" style="float:right;margin-left:10px">✏️</span>':'')+(String(o.v)===String(sel)?' <span style="color:var(--accent);float:right">✓</span>':'')+'</button>';
     }).join('')||'<div class="muted">No options.</div>')
     +'<div class="row"><button class="btn ghost" id="pickCancel">Cancel</button></div></div>';
@@ -2621,6 +2622,7 @@ window.pick=function(btn){
       });
     }
     if(hid)hid.value=v;
+    if(hid&&hid.dataset.live){ try{ hid.dispatchEvent(new Event('change')); }catch(e){} }
     btn.innerHTML='<span>'+esc(l)+'</span><span style="opacity:.55">▾</span>';
   });
 };
@@ -2858,7 +2860,7 @@ function boot(){
     }
   }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.0.5 ready';
+  if(mark)mark.textContent='\u2713 LB3.0.6 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3263,6 +3265,6 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39c84852ec9d44c',t:'MTc4OTE5MDk5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39ca6b7e8489337',t:'MTc4OTE5MjQwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
