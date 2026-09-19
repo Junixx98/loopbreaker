@@ -8,6 +8,7 @@
 <script>
 if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+ navigator.serviceWorker.addEventListener('controllerchange',function(){ if(!window._lbRel){ window._lbRel=1; setTimeout(function(){ location.reload(); },400); } });
 }
 </script>
 <meta name="mobile-web-app-capable" content="yes">
@@ -320,6 +321,7 @@ body.light .wmap{background:#dfe8f5}
   <div class="neTop">
     <button class="wctl" onclick="closeNoteEditor()" style="font-size:16px;padding:6px 12px">‹</button>
     <span style="flex:1"></span>
+    <span id="neClock" class="muted" style="font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.5px"></span>
     <button class="wctl" onclick="exec('undo')" title="Undo">↶</button>
     <button class="wctl" onclick="exec('redo')" title="Redo">↷</button>
     <button class="btn small" onclick="saveNoteEd()">✓ Save</button>
@@ -530,6 +532,8 @@ function reconcSections(){
   if(S.routRange!=='week'&&S.routRange!=='month'&&S.routRange!=='yearly')S.routRange='week';
   if(S.sleepRange!=='week'&&S.sleepRange!=='month'&&S.sleepRange!=='yearly')S.sleepRange='week';
   if(S.goalRange!=='week'&&S.goalRange!=='month'&&S.goalRange!=='yearly')S.goalRange='week';
+  if(!S.routActive||!secList().some(function(g){return g.key===S.routActive;}))S.routActive=(secList()[0]||{}).key||null;
+
   if(!Array.isArray(S.goals))S.goals=[];
   if(!S.moreLock||typeof S.moreLock!=='object'||Array.isArray(S.moreLock))S.moreLock={on:false,type:'pattern',code:''};
   if(S.quotes!==null){ if(!Array.isArray(S.quotes))S.quotes=null; else { S.quotes=S.quotes.filter(function(q){return typeof q==='string'&&q.trim();}); if(!S.quotes.length)S.quotes=null; } }
@@ -600,7 +604,7 @@ const WTABS={
   notes:[{id:'nmain',t:'Notes',ic:'note'}],
   cal:[{id:'calmain',t:'Calendar',ic:'calendar'}],
   routine:[{id:'rmain',t:'Routines',ic:'check'},{id:'weekrings',t:'Weekly Rings',ic:'chart'}],
-  money:[{id:'msum',t:'Month summary',ic:'chart'},{id:'minc',t:'Log earning',ic:'upload'},{id:'mexp',t:'Log expense',ic:'download'},{id:'mbud',t:'Budget plan',ic:'wallet'},{id:'mgoal',t:'Savings goal',ic:'target'},{id:'mrec',t:'Recent activity',ic:'note'}],
+  money:[{id:'mledger',t:'Records',ic:'note'},{id:'msum',t:'Month summary',ic:'chart'},{id:'minc',t:'Log earning',ic:'upload'},{id:'mexp',t:'Log expense',ic:'download'},{id:'mbud',t:'Budget plan',ic:'wallet'},{id:'mgoal',t:'Savings goal',ic:'target'},{id:'mrec',t:'Recent activity',ic:'note'}],
   trade:[{id:'tsess',t:'Session Clock',ic:'clock'},{id:'tover',t:'Account Overview',ic:'chart'},{id:'tcharts',t:'Charts',ic:'chart'},{id:'tprofit',t:'Profit charts',ic:'chart'},{id:'tcal',t:'Trading P&L Calendar',ic:'calendar'},{id:'tjpref',t:'Journal preferences',ic:'gear'},{id:'tsym',t:'Symbol Table',ic:'note'},{id:'topen',t:'Open Trades',ic:'target'},{id:'tlog',t:'Log Trade',ic:'upload'},{id:'tjour',t:'Trade Journal',ic:'note'},{id:'tnews',t:'News Pins',ic:'news'},{id:'tpb',t:'Setup Playbook',ic:'note'},{id:'tmb',t:'Mistake Bank',ic:'flame'}],
   more:[{id:'users',t:'Accounts & Lock',ic:'gear'},{id:'rev',t:'Auto Review',ic:'chart'},{id:'bak',t:'Backup & Transfer',ic:'download'},{id:'set',t:'Settings',ic:'gear'}]
 };
@@ -720,6 +724,8 @@ document.getElementById('modalBg').onclick=function(e){ if(e.target.id==='modalB
 
 // ================= TODAY TAB =================
 function allItems(){ var out=[]; secList().forEach(function(g){ var l=S.checklist[g.key]; if(l)out=out.concat(l); }); return out; }
+function activeItems(){ var ks=secList(); var k=S.routActive; if(!k||!ks.some(function(g){return g.key===k;}))k=(ks[0]||{}).key; return (k&&S.checklist[k])||[]; }
+function activeName(){ var ks=secList(); var k=S.routActive; if(!k||!ks.some(function(g){return g.key===k;}))k=(ks[0]||{}).key; var g=ks.find(function(x){return x.key===k;}); return g?g.name:''; }
 function itemStreak(id){
   let n=0, d=todayStr();
   if(!(S.done[d]||{})[id]) d=addDays(d,-1);
@@ -728,13 +734,48 @@ function itemStreak(id){
 }
 function bestStreak(){ let b=0; allItems().forEach(function(i){ b=Math.max(b,itemStreak(i.id)); }); return b; }
 function dayCompletion(date){
-  const items=allItems(); if(!items.length) return 0;
+  const items=activeItems(); if(!items.length) return 0;
   const ds=S.done[date]||{}; let c=0;
   items.forEach(function(i){ if(ds[i.id])c++; });
   return c/items.length;
 }
 let tInt=null, tLeft=25*60, tMode='work', tRun=false;
 function tPersist(){ try{ S.timer=S.timer||{}; if(tRun){ S.timer.run={mode:tMode,left:tLeft*1000,end:Date.now()+tLeft*1000}; } else { S.timer.run=(tLeft>0&&tLeft<dur(tMode))?{mode:tMode,left:tLeft*1000,end:0,paused:true}:null; } save(); }catch(e){} }
+window._tArm=function(){
+  if(tInt)clearInterval(tInt);
+  var r=S.timer&&S.timer.run; if(!r)return;
+  tRun=true; tMode=r.mode||'work';
+  tInt=setInterval(function(){
+    var rr=S.timer&&S.timer.run; if(!rr){ clearInterval(tInt); tInt=null; tRun=false; return; }
+    tLeft=Math.max(0,Math.round((rr.end-Date.now())/1000));
+    var sb=document.getElementById('btnTimerStart'); if(sb)sb.textContent='⏸ Pause';
+    tDisp();
+    if(Date.now()>=rr.end){
+      clearInterval(tInt); tInt=null; tRun=false; tfOpen(false);
+      S.timer=S.timer||{}; S.timer.run=null; save();
+      playTune(S.ring||'chime'); lbNotify(rr.mode==='work'?'Focus session complete — take a break! ☕':'Break over — back to work! 💪');
+      var d=todayStr();
+      if(rr.mode==='work'){
+        uiConfirm('Save this focus session to your 🔥 count? Cancel = skip it.',function(){ S.pomo[d]=(S.pomo[d]||0)+1; save(); renderAll(); },{title:'✅ Focus complete!',okText:'Save it',danger:false,icon:'🔥'});
+        tMode='break'; tLeft=(S.timer&&S.timer.break||5)*60; uiToast('✅ Focus session complete! Stand up, drink water.');
+      } else { tMode='work'; tLeft=(S.timer&&S.timer.work||25)*60; uiToast('Break over. Back to work. 💪'); }
+      tPersist(); renderAll(); return;
+    }
+  },250);
+};
+window.lbTimerCatch=function(){
+  var r=S.timer&&S.timer.run; if(!r)return;
+  if(r.end&&Date.now()>=r.end){
+    var wasWork=(r.mode||'work')==='work'; S.timer.run=null; var d=todayStr();
+    if(wasWork){ S.pomo[d]=(S.pomo[d]||0)+1; save(); tMode='break'; tLeft=(S.timer&&S.timer.break||5)*60;
+      setTimeout(function(){ playTune(S.ring||'chime'); try{ uiToast('⏰ Focus session finished while away — counted as 🔥 +1'); try{ lbNotify('Focus session finished while away — counted! 🔥'); }catch(e){} }catch(e){} },500); }
+    else { tMode='work'; tLeft=(S.timer&&S.timer.work||25)*60;
+      setTimeout(function(){ playTune(S.ring||'chime'); try{ uiToast('⏰ Your break finished while the app was closed!'); }catch(e){} },500); }
+    tPersist(); renderAll(); return;
+  }
+  if(!tRun){ tMode=r.mode||'work'; tLeft=Math.max(1,Math.round((r.end-Date.now())/1000)); window._tArm(); if(document.getElementById('tFocus'))tfOpen(true); }
+};
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible'){ setTimeout(function(){ try{ lbTimerCatch(); }catch(e){} },300); } });
 window.TUNES={chime:{l:'🟢 Chime'},ding:{l:'🔵 Ding-dong'},bell:{l:'🟡 School bell'},digital:{l:'🟣 Digital beep'},marimba:{l:'🟠 Marimba'},fanfare:{l:'🔴 Fanfare'},alarm:{l:'🚨 Alarm'}};
 window.playTune=function(id){ try{
   var C=window.AudioContext||window.webkitAudioContext; if(!C)return;
@@ -818,10 +859,7 @@ function todayBodies(){
     }, bind:function(){
       (function(){ try{
         var r=S.timer&&S.timer.run;
-        if(r&&r.end&&r.end>Date.now()&&!tRun){ tMode=r.mode; tLeft=Math.max(0,Math.round((r.end-Date.now())/1000)); tRun=true; tfOpen(true);
-          tInt=setInterval(function(){ tLeft--; if(tLeft<=0){ clearInterval(tInt); tRun=false; tfOpen(false); S.timer=S.timer||{}; S.timer.run=null; save(); playTune(S.ring||'chime'); lbNotify(tMode==='work'?'Focus session complete — take a break! ☕':'Break over — back to work! 💪');
-            if(tMode==='work'){ var d=todayStr(); uiConfirm('Save this focus session to your 🔥 count? Cancel = skip it.',function(){ S.pomo[d]=(S.pomo[d]||0)+1; save(); renderAll(); },{title:'✅ Focus complete!',okText:'Save it',danger:false,icon:'🔥'}); tMode='break'; tLeft=(S.timer&&S.timer.break||5)*60; uiToast('✅ Focus session complete!'); } else { tMode='work'; tLeft=(S.timer&&S.timer.work||25)*60; uiToast('Break over. Back to work. 💪'); } tPersist(); renderAll(); return; } tDisp(); },1000);
-        } else if(r&&r.paused&&r.left>0&&!tRun){ tMode=r.mode; tLeft=Math.max(1,Math.round(r.left/1000)); }
+        if(r&&r.end&&r.end>Date.now()&&!tRun){ window._tArm(); tfOpen(true);} else if(r&&r.paused&&r.left>0&&!tRun){ tMode=r.mode; tLeft=Math.max(1,Math.round(r.left/1000)); }
       }catch(e){} })();
       var _rs=document.getElementById('ringSel'); if(_rs){ _rs.dataset.live='1'; _rs.onchange=function(){ S.ring=_rs.value||'chime'; save(); playTune(S.ring); uiToast('🎵 '+((window.TUNES[S.ring]||{}).l||'Sound')+' set — that play was your preview!'); }; }
       tDisp();
@@ -1315,7 +1353,7 @@ function routineBodies(){
     const t=todayStr(), ds=S.done[t]||{};
     const secs=secList().map(function(g){ return [g.key,g.name]; });
     let html='';
-    const items=allItems(), dn=items.filter(function(i){return ds[i.id];}).length;
+    const items=activeItems(), dn=items.filter(function(i){return ds[i.id];}).length;
     const pct=items.length?Math.round(dn/items.length*100):0;
     html+='<div style="margin-bottom:10px"><span class="muted">'+(items.length?(dn+'/'+items.length+' done · '+pct+'%'):'Add your first habits below')+'</span>'
       +'<div class="bar"><i style="width:'+pct+'%"></i></div></div>';
@@ -1332,7 +1370,8 @@ function routineBodies(){
       })();
     secs.forEach(function(pair){
       const key=pair[0], label=pair[1];
-      html+='<div class="section-title">'+label+'</div>'
+      html+='<div class="section-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1">'+label+'</span>'
+        +'<button class="x" data-ract="'+key+'" style="font-size:11px;'+(S.routActive===key?'color:var(--accent);font-weight:800;border:1px solid var(--accent);border-radius:99px;padding:3px 10px':'opacity:.6;border:1px dashed var(--line);border-radius:99px;padding:3px 10px')+'">'+(S.routActive===key?'✓ RECORDING':'○ record this')+'</button></div>'
         // ADD INPUT AT TOP
         +'<div class="row" style="margin-top:0"><input type="text" placeholder="＋ Add '+label.replace(/^[^ ]+ /,'')+' habit…" id="rin-'+key+'">'
         +'<button class="btn small" data-radd="'+key+'" style="flex:.35">Add</button></div>';
@@ -1362,6 +1401,8 @@ S.checklist[el.dataset.rsec]=(S.checklist[el.dataset.rsec]||[]).filter(function(
       save(); renderAll();
 });}; });
     var rrg=document.getElementById('routRg'); if(rrg){ rrg.dataset.live='1'; rrg.onchange=function(){ S.routRange=rrg.value||'week'; save(); renderAll(); }; }
+    document.querySelectorAll('[data-ract]').forEach(function(el){ el.onclick=function(){
+      S.routActive=el.dataset.ract; save(); renderAll(); buzz(); uiToast('📊 Recording '+activeName()+' only'); }; });
     document.querySelectorAll('[data-radd]').forEach(function(el){ el.onclick=function(){
       const inp=document.getElementById('rin-'+el.dataset.radd);
       const v=inp.value.trim(); if(!v)return;
@@ -1373,7 +1414,7 @@ S.checklist[el.dataset.rsec]=(S.checklist[el.dataset.rsec]||[]).filter(function(
     });
   } },
   weekrings:{ b:function(){
-    const tot=allItems().length, L=['S','M','T','W','T','F','S'];
+    const tot=activeItems().length, L=['S','M','T','W','T','F','S'];
     const days=[];
     for(let i=6;i>=0;i--){
       const ds=addDays(todayStr(),-i);
@@ -1433,6 +1474,43 @@ function monthExpense(month){ let s=0; S.expenses.forEach(function(e){ if(e.date
 function weekStart(){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d; }
 function moneyBodies(){
   return {
+    mledger:{ b:function(){
+      var f=window._ledF||'all';
+      var rows=[].concat(
+        S.expenses.map(function(e){return {k:'exp',id:e.id,d:e.date,a:+e.amount,t:e.cat,n:e.note,f:e.freq||'once'};}),
+        S.income.map(function(e){return {k:'inc',id:e.id,d:e.date,a:+e.amount,t:e.src,n:e.note,f:e.freq||(e.recur==='monthly'?'monthly':'once')};})
+      ).sort(function(a,b){return b.d.localeCompare(a.d)||b.id.localeCompare(a.id);});
+      var shown=rows.filter(function(r){ return f==='all'||(f==='inc'?r.k==='inc':r.k==='exp'); });
+      var mo=monthKey(); var mI=0,mE=0; rows.forEach(function(r){ if(r.d.slice(0,7)===mo){ if(r.k==='inc')mI+=r.a; else mE+=r.a; } });
+      function lab(r){ return (r.f&&r.f!=='once')?' 🔁'+({daily:'daily',weekly:'weekly',monthly:'monthly',quarterly:'3-mo',semi:'6-mo',annual:'yearly'})[r.f]:''; }
+      return '<div class="muted" style="font-size:12px">Every earning & expense you logged — tap ✏️ to fix anything, 🗑 to delete.</div>'
+        +'<div class="grid4">'+stat('<span class="pos">'+fmtPeso(mI)+'</span>','💵 Earned · mo')
+        +stat('<span class="neg">'+fmtPeso(mE)+'</span>','🧾 Spent · mo')
+        +stat(fmtPeso(rows.length),'Records')+'</div>'
+        +'<div class="row" style="margin:8px 0 0">'
+        +[['all','🗂️ All'],['inc','💵 Earnings'],['exp','🧾 Expenses']].map(function(c2){
+          return '<button class="btn '+(f===c2[0]?'':'ghost')+' small" data-ledf="'+c2[0]+'" style="flex:1;'+(f===c2[0]?'border-color:var(--accent);color:var(--accent);font-weight:800':'')+'">'+c2[1]+'</button>'; }).join('')+'</div>'
+        +(shown.map(function(r){
+          return '<div class="list-item"><span class="sw" style="background:'+(r.k==='inc'?'#4ade80':'#f87171')+'"></span>'
+            +'<span style="flex:1"><b class="'+(r.k==='inc'?'pos':'neg')+'">'+(r.k==='inc'?'+':'−')+fmtPeso(r.a)+'</b> <span class="badge">'+esc(r.t)+lab(r)+'</span>'+(r.n?' <span class="muted">'+esc(r.n)+'</span>':'')+'</span>'
+            +'<span class="muted" style="font-size:11px">'+r.d.slice(5)+'</span>'
+            +'<button class="x" data-ledit="'+r.k+'|'+r.id+'" style="font-size:13px">✏️</button>'
+            +'<button class="x" data-ledel="'+r.k+'|'+r.id+'" title="Delete">×</button></div>';
+        }).join('')||'<div class="muted center" style="padding:10px 0">Nothing here yet.</div>');
+    }, bind:function(){
+      document.querySelectorAll('[data-ledf]').forEach(function(el){ el.onclick=function(){ window._ledF=el.getAttribute('data-ledf'); save(); renderAll(); }; });
+      document.querySelectorAll('[data-ledit]').forEach(function(el){ el.onclick=function(){
+        var p2=el.dataset.ledit.split('|'); ledDialog(p2[0],p2[1]); }; });
+      document.querySelectorAll('[data-ledel]').forEach(function(el){ el.onclick=function(){
+        var p2=el.dataset.ledel.split('|');
+        var src=p2[0]==='inc'?S.income:S.expenses;
+        var it=src.find(function(x){return x.id===p2[1];}); if(!it)return;
+        uiConfirm('Delete this '+(p2[0]==='inc'?'earning':'expense')+' ('+fmtPeso(it.amount)+')? It will be removed for good.',function(){
+          if(p2[0]==='inc')S.income=S.income.filter(function(x){return x.id!==p2[1];});
+          else S.expenses=S.expenses.filter(function(x){return x.id!==p2[1];});
+          save(); renderAll(); buzz(); uiToast('🗑️ Removed'); });
+      }; });
+    }},
     msum:{ b:function(){
       const mo=monthKey(), inc=monthIncome(mo), exp=monthExpense(mo), net=inc-exp;
       const wk=weekStart(); let wsum=0;
@@ -2257,7 +2335,7 @@ function moreBodies(){
         +'</div>'
         +'<div class="section-title">🔒 Settings-tab lock</div>'
         +(S.moreLock&&S.moreLock.on
-          ?'<div class="row" style="margin-top:0"><button class="btn ghost" id="mlOff">🔓 Turn lock off</button><button class="btn ghost" id="mlLockNow">🔒 Lock now</button></div><div class="muted" style="font-size:11px">Type: '+(S.moreLock.type==='pass'?'password':'pattern')+'. It asks every time you open the app.</div>'
+          ?'<div class="row" style="margin-top:0"><button class="btn ghost" id="mlOff">🔓 Turn lock off</button><button class="btn ghost" id="mlChg">✏️ Change</button><button class="btn ghost" id="mlLockNow">🔒 Lock now</button></div><div class="muted" style="font-size:11px">Type: '+(S.moreLock.type==='pass'?'password':'pattern')+'. Forgot it? Tap ✏️ Change — or use 🆘 Forgot? on the lock screen (verify this gadget\u2019s name).</div>'
           :'<div class="row" style="margin-top:0"><button class="btn ghost" id="mlSetP">🖐️ Set pattern lock</button><button class="btn ghost" id="mlSetW">🔡 Set password lock</button></div><div class="muted" style="font-size:11px">Pattern, letters, numbers or a complex password — it gates the Settings tab.</div>')
         +'<div class="section-title">⏰ Countdown pop-ups</div><div class="row" style="margin-top:0"><button class="btn ghost" id="cdPerm">🔔 Enable pop-up reminders</button></div><div class="muted" style="font-size:11px">Pops up on the day (and the day before) each countdown; with permission it also notifies you outside the app.</div>'
         +'<div class="section-title">💬 Loading-screen quotes</div>'
@@ -2311,6 +2389,7 @@ S.widgets={}; S.editMode=false; save(); renderAll();
       if(abtn){ var asp=abtn.querySelector('span'); if(asp){ asp.style.color=ACCENTS[S.accent]||ACCENTS.green; asp.textContent='● '+S.accent; } }
       var moff=document.getElementById('mlOff'); if(moff)moff.onclick=function(){ uiConfirm('Turn off the Settings-tab lock?',function(){ S.moreLock.on=false; save(); renderAll(); uiToast('Lock removed'); }); };
       var mln=document.getElementById('mlLockNow'); if(mln)mln.onclick=function(){ window._moreUnlocked=false; uiToast('🔒 Locked'); window._exitMore(); };
+      var mch=document.getElementById('mlChg'); if(mch)mch.onclick=function(){ if(S.moreLock.type==='pass')mlSetupPass(); else mlSetupPattern(); };
       var msp=document.getElementById('mlSetP'); if(msp)msp.onclick=function(){ mlSetupPattern(); };
       var msw=document.getElementById('mlSetW'); if(msw)msw.onclick=function(){ mlSetupPass(); };
       var cdp=document.getElementById('cdPerm'); if(cdp)cdp.onclick=function(){
@@ -2450,13 +2529,15 @@ function secManager(){
   S.checkSections=secList();
   var rows=S.checkSections.map(function(g,gi){
     var n=(S.checklist[g.key]||[]).length;
-    return '<div class="list-item"><span style="flex:1">'+esc(g.name)+' <span class="muted">· '+n+' habit'+(n===1?'':'s')+'</span></span>'
+    var on=S.routActive===g.key;
+    return '<div class="list-item"><button class="x" data-sgact="'+gi+'" title="Record to progress" style="'+(on?'color:var(--accent);font-weight:800':'opacity:.5')+'">'+(on?'✓':'○')+'</button>'
+      +'<span style="flex:1">'+esc(g.name)+' <span class="muted">· '+n+' habit'+(n===1?'':'s')+(on?' · 📊 recording':'')+'</span></span>'
       +'<button class="x" style="font-size:15px" data-sgrn="'+gi+'">✏️</button>'
       +'<button class="x" data-sgdel="'+gi+'">×</button></div>';
   }).join('');
   openModal('<h3>⚙️ Routine groups</h3>'+rows
     +'<div class="row"><input type="text" id="sgName" placeholder="＋ New group (💼 Work days, 🎒 School days…)…" maxlength="28"><button class="btn small" id="sgAdd">Add</button></div>'
-    +'<div class="muted" style="margin-top:6px;font-size:12px">Groups split your routine by situation — only tick the group that applies today. Renaming or adding keeps every habit and 🔥 streak.</div>'
+    +'<div class="muted" style="margin-top:6px;font-size:12px">Groups split your routine by situation. Tap the ✓ to choose which group counts toward routine progress — only ONE records at a time. Renaming or adding keeps every habit and 🔥 streak.</div>'
     +'<div class="row"><button class="btn ghost" onclick="closeModal()">Done</button></div>');
   function addSec(){
     var v=document.getElementById('sgName').value.trim().replace(/["<>]/g,'');
@@ -2467,6 +2548,9 @@ function secManager(){
   }
   document.getElementById('sgAdd').onclick=addSec;
   document.getElementById('sgName').onkeydown=function(e){ if(e&&e.key==='Enter')addSec(); };
+  document.querySelectorAll('[data-sgact]').forEach(function(el){ el.onclick=function(){
+    var g=S.checkSections[+el.dataset.sgact]; if(!g)return; S.routActive=g.key; save(); buzz(); renderAll(); secManager(); uiToast('📊 Recording '+g.name+' only'); };
+  });
   document.querySelectorAll('[data-sgrn]').forEach(function(el){ el.onclick=function(){
     var g=S.checkSections[+el.dataset.sgrn]; if(!g)return;
     uiAsk('Rename group',g.name,function(name){
@@ -2579,6 +2663,7 @@ window.exec=function(cmd,val){ document.execCommand(cmd,false,val||null); const 
 window._fmtTick=function(){ var ne=document.getElementById('noteEd'); if(!ne||!ne.classList.contains('on'))return; ['bold','italic','underline'].forEach(function(cmd){ var b=document.querySelector('[data-fmt="'+cmd+'"]'); if(!b)return; var on=false; try{ on=document.queryCommandState(cmd); }catch(e){} if(on)b.classList.add('on'); else b.classList.remove('on'); }); };
 document.addEventListener('selectionchange',function(){ try{ window._fmtTick(); }catch(e){} });
 (function(){ var ed=document.getElementById('neBody'); if(!ed)return; ['keyup','mouseup','touchend'].forEach(function(ev){ ed.addEventListener(ev,function(){ setTimeout(window._fmtTick,10); }); }); })();
+setInterval(function(){ try{ var ne=document.getElementById('noteEd'); var c=document.getElementById('neClock'); if(ne&&c&&ne.classList.contains('on')){ var n=new Date(); c.textContent='🕐 '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0'); } }catch(e){} },1000);
 window.openPbEditor=function(id){
   const p=S.playbook.find(function(x){return x.id===id;}); if(!p)return;
   pendingPb=(p.imgs||[]).slice();
@@ -2831,14 +2916,16 @@ window.showMoreLock=function(){
     ov.innerHTML='<div style="font-size:34px">🔒</div><h3 style="margin:8px 0 4px">Settings is locked</h3>'
       +'<div class="muted" style="margin-bottom:12px">Enter your password to continue</div>'
       +'<input id="mlPass" type="password" style="max-width:260px;text-align:center;letter-spacing:2px" placeholder="••••••">'
-      +'<div class="row" style="max-width:300px;margin-top:14px"><button class="btn ghost" id="mlCancel">Back</button><button class="btn" id="mlGo">Unlock</button></div>';
+      +'<div class="row" style="max-width:300px;margin-top:14px"><button class="btn ghost" id="mlCancel">Back</button><button class="btn ghost" id="mlClr">✕ Clear</button><button class="btn" id="mlGo">Unlock</button></div><div class="muted" style="font-size:11px;margin-top:10px"><button class="x" id="mlForg" style="opacity:.75">🆘 Forgot?</button></div>';
     document.body.appendChild(ov);
     var go=function(){ var v2=document.getElementById('mlPass').value||'';
-      if(btoa(v2)===L.code){ window._moreUnlocked=true; ov.parentNode.removeChild(ov); buzz(); uiToast('🔓 Unlocked'); }
+      if(btoa(v2)===L.code){ window._moreUnlocked=true; ov.parentNode.removeChild(ov); buzz(); uiToast('🔓 Unlocked'); var mb=document.querySelector('nav button[data-tab="more"]'); if(mb)mb.click(); }
       else { uiToast('❌ Wrong password'); var p3=document.getElementById('mlPass'); if(p3)p3.value=''; } };
     document.getElementById('mlGo').onclick=go;
     document.getElementById('mlPass').onkeydown=function(e){ if(e&&e.key==='Enter')go(); };
     document.getElementById('mlCancel').onclick=function(){ if(ov.parentNode)ov.parentNode.removeChild(ov); };
+    var _mc=document.getElementById('mlClr'); if(_mc)_mc.onclick=function(){ var pp=document.getElementById('mlPass'); if(pp)pp.value=''; var sq=document.getElementById('mlSeq'); if(sq){ sq.textContent=''; seq=[]; ov.querySelectorAll('.mdot').forEach(function(d2){d2.classList.remove('picked');}); } };
+    var _mf=document.getElementById('mlForg'); if(_mf)_mf.onclick=function(){ mlForgot(); };
     setTimeout(function(){ var p4=document.getElementById('mlPass'); if(p4)try{p4.focus();}catch(e){} },80);
   } else {
     var seq=[];
@@ -2846,15 +2933,30 @@ window.showMoreLock=function(){
       +'<div class="muted">Tap your pattern in order</div><div class="mgrid">'
       +[0,1,2,3,4,5,6,7,8].map(function(i){ return '<button class="mdot" data-pd="'+i+'">'+(i+1)+'</button>'; }).join('')
       +'</div><div id="mlSeq" style="letter-spacing:4px;min-height:18px;color:var(--accent)"></div>'
-      +'<div class="row" style="max-width:300px;margin-top:14px"><button class="btn ghost" id="mlCancel">Back</button><button class="btn" id="mlGo">Unlock</button></div>';
+      +'<div class="row" style="max-width:300px;margin-top:14px"><button class="btn ghost" id="mlCancel">Back</button><button class="btn ghost" id="mlClr">✕ Clear</button><button class="btn" id="mlGo">Unlock</button></div><div class="muted" style="font-size:11px;margin-top:10px"><button class="x" id="mlForg" style="opacity:.75">🆘 Forgot?</button></div>';
     document.body.appendChild(ov);
     ov.querySelectorAll('[data-pd]').forEach(function(d){ d.onclick=function(){ var i=+d.dataset.pd;
       if(seq.indexOf(i)<0){ seq.push(i); d.classList.add('picked'); document.getElementById('mlSeq').textContent=seq.map(function(){return '●';}).join(' '); } }; });
     document.getElementById('mlGo').onclick=function(){
-      if(seq.join(',')===L.code){ window._moreUnlocked=true; ov.parentNode.removeChild(ov); buzz(); uiToast('🔓 Unlocked'); }
+      if(seq.join(',')===L.code){ window._moreUnlocked=true; ov.parentNode.removeChild(ov); buzz(); uiToast('🔓 Unlocked'); var mb=document.querySelector('nav button[data-tab="more"]'); if(mb)mb.click(); }
       else { uiToast('❌ Wrong pattern'); seq=[]; ov.querySelectorAll('.mdot').forEach(function(d2){d2.classList.remove('picked');}); document.getElementById('mlSeq').textContent=''; } };
     document.getElementById('mlCancel').onclick=function(){ if(ov.parentNode)ov.parentNode.removeChild(ov); };
+    var _mc=document.getElementById('mlClr'); if(_mc)_mc.onclick=function(){ var pp=document.getElementById('mlPass'); if(pp)pp.value=''; var sq=document.getElementById('mlSeq'); if(sq){ sq.textContent=''; seq=[]; ov.querySelectorAll('.mdot').forEach(function(d2){d2.classList.remove('picked');}); } };
+    var _mf=document.getElementById('mlForg'); if(_mf)_mf.onclick=function(){ mlForgot(); };
   }
+};
+window.mlForgot=function(){
+  var cfg={}; try{ cfg=JSON.parse(localStorage.getItem('loopbreaker_sync')||'{}'); }catch(e){ cfg={}; }
+  var dev=(cfg&&cfg.dev)?String(cfg.dev):'';
+  uiAsk('Verify it is you','Type this gadget\u2019s name — the one you set in Cloud Sync (e.g. Vivo, XPAD). If this gadget has no name, type LOOPBREAKER.',function(ans){
+    ans=(ans||'').trim();
+    var ok=dev?(ans.toLowerCase()===dev.toLowerCase()):(ans.toUpperCase()==='LOOPBREAKER');
+    if(ok){ S.moreLock={on:false,type:'pattern',code:''}; save(); window._moreUnlocked=false;
+      var mo=document.getElementById('mlock'); if(mo&&mo.parentNode)mo.parentNode.removeChild(mo);
+      renderAll(); uiToast('🔓 Lock reset — set a new one in Settings');
+      var mb=document.querySelector('nav button[data-tab="more"]'); if(mb)mb.click(); }
+    else uiToast('❌ That is not this gadget\u2019s name');
+  });
 };
 window.mlSetupPass=function(){
   uiAsk('New password for More','',function(pw){
@@ -2868,9 +2970,10 @@ window.mlSetupPattern=function(){
   openModal('<h3>🖐️ Set your pattern</h3><div class="muted" style="margin-bottom:6px">Tap at least 3 dots, in an order you will remember.</div><div class="mgrid">'
     +[0,1,2,3,4,5,6,7,8].map(function(i){ return '<button class="mdot" data-sp="'+i+'">'+(i+1)+'</button>'; }).join('')
     +'</div><div id="mlSetSeq" style="letter-spacing:4px;min-height:18px;color:var(--accent)"></div>'
-    +'<div class="row"><button class="btn ghost" onclick="closeModal()">Cancel</button><button class="btn" id="mlSetOk">Save pattern</button></div>');
+    +'<div class="row"><button class="btn ghost" onclick="closeModal()">Cancel</button><button class="btn ghost" id="mlSetClr">✕ Clear</button><button class="btn" id="mlSetOk">Save pattern</button></div>');
   document.querySelectorAll('[data-sp]').forEach(function(d){ d.onclick=function(){ var i=+d.dataset.sp;
     if(seq.indexOf(i)<0){ seq.push(i); d.classList.add('picked'); document.getElementById('mlSetSeq').textContent=seq.map(function(){return '●';}).join(' '); } }; });
+  var _msc=document.getElementById('mlSetClr'); if(_msc)_msc.onclick=function(){ seq=[]; document.querySelectorAll('[data-sp]').forEach(function(d2){d2.classList.remove('picked');}); var sq2=document.getElementById('mlSetSeq'); if(sq2)sq2.textContent=''; };
   document.getElementById('mlSetOk').onclick=function(){
     if(seq.length<3)return uiToast('Tap at least 3 dots');
     S.moreLock={on:true,type:'pattern',code:seq.join(',')}; save(); closeModal(); buzz(); window._moreUnlocked=false; renderAll(); uiToast('🔒 Settings tab locked — closing it'); window._exitMore();
@@ -2916,6 +3019,34 @@ setInterval(function(){ try{ cdRemind(); }catch(e){} },60000);
   }
   setTimeout(renderGlance,800); setInterval(renderGlance,30000);
 })();
+window.ledDialog=function(kind,id){
+  var src=kind==='inc'?S.income:S.expenses;
+  var it=src.find(function(x){return x.id===id;}); if(!it)return;
+  var isInc=kind==='inc';
+  var FR=[['once','📅 Once'],['daily','🌞 Daily'],['weekly','📆 Weekly'],['monthly','🗓️ Monthly'],['quarterly','🍂 Quarterly'],['semi','🌗 Semi-annual'],['annual','🎂 Annual']];
+  openModal('<h3>'+(isInc?'💵 Edit earning':'🛒 Edit expense')+'</h3>'
+    +'<label class="fl">Amount ₱</label><input type="number" id="ledA" step="0.01" value="'+(it.amount||'')+'">'
+    +'<div class="grid2"><div><label class="fl">Date</label><input type="date" id="ledD" value="'+(it.date||todayStr())+'"></div>'
+    +'<div><label class="fl">Repeats</label><select id="ledF">'+FR.map(function(o){ return '<option value="'+o[0]+'"'+((it.freq||'once')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div></div>'
+    +'<label class="fl">'+(isInc?'Source':'Category')+'</label><input id="ledT" value="'+esc(isInc?(it.src||''):(it.cat||''))+'" maxlength="30">'
+    +'<label class="fl">Note</label><input id="ledN" value="'+esc(it.note||'')+'" maxlength="60">'
+    +'<div class="row" style="margin-top:14px"><button class="btn ghost" onclick="closeModal()">Cancel</button>'
+    +'<button class="btn danger" id="ledDel" style="background:linear-gradient(135deg,#ef4444,#f97316);border:none">🗑 Delete</button>'
+    +'<button class="btn" id="ledSave">💾 Save</button></div>');
+  document.getElementById('ledSave').onclick=function(){
+    var a=parseFloat(document.getElementById('ledA').value); if(!a||a<=0)return uiToast('Enter a valid amount');
+    it.amount=a; it.date=document.getElementById('ledD').value||it.date;
+    if(isInc)it.src=document.getElementById('ledT').value.trim()||it.src; else it.cat=document.getElementById('ledT').value.trim()||it.cat;
+    it.note=document.getElementById('ledN').value.trim(); it.freq=document.getElementById('ledF').value;
+    if(!isInc&&it.freq==='once')delete it.freq;
+    save(); closeModal(); renderAll(); buzz(); uiToast('💾 Updated');
+  };
+  document.getElementById('ledDel').onclick=function(){
+    uiConfirm('Delete this '+(isInc?'earning':'expense')+' ('+fmtPeso(it.amount)+')?',function(){
+      if(isInc)S.income=S.income.filter(function(x){return x.id!==id;}); else S.expenses=S.expenses.filter(function(x){return x.id!==id;});
+      save(); closeModal(); renderAll(); buzz(); uiToast('🗑️ Removed'); });
+  };
+};
 let toastT=null;
 window.uiToast=function(msg){
   let t=document.getElementById('uiToast');
@@ -3141,16 +3272,9 @@ function boot(){
     inp.oninput=function(){ if(inp.value.length>=4)tryPin(); };
     inp.onkeydown=function(e){ if(e.key==='Enter')tryPin(); };
   })();
-  try{
-    var _r=S.timer&&S.timer.run;
-    if(_r&&_r.end&&_r.end<=Date.now()){
-      if(_r.mode==='work'){ var _d=todayStr(); S.pomo[_d]=(S.pomo[_d]||0)+1; }
-      S.timer.run=null; save();
-      setTimeout(function(){ playTune(S.ring||'chime'); try{ uiToast('⏰ Your '+(_r.mode==='work'?'focus session':'break')+' finished while the app was closed!'); }catch(e){} },1200);
-    }
-  }catch(e){}
+  try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.1.3 ready';
+  if(mark)mark.textContent='\u2713 LB3.2.1 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3555,5 +3679,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3b88dda4ab102da',t:'MTc4OTQ4NDk4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d4d2839cfd09e0',t:'MTc4OTc4MTM5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
