@@ -35,8 +35,8 @@ header{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px s
 header h1{font-size:17px;letter-spacing:.5px}
 header h1 span{color:var(--accent)}
 #hdrClock{margin-left:auto;text-align:right;line-height:1.15}
-#hdrTime{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
-#hdrDate{font-size:11px;color:var(--muted)}
+#hdrTime{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05}
+#hdrDate{font-size:13px;color:var(--muted)}
 main{max-width:780px;margin:0 auto;padding:16px}
 .wcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
 .wcard.sz-s{padding:10px 12px;font-size:.9em}
@@ -321,7 +321,7 @@ body.light .wmap{background:#dfe8f5}
   <div class="neTop">
     <button class="wctl" onclick="closeNoteEditor()" style="font-size:16px;padding:6px 12px">‹</button>
     <span style="flex:1"></span>
-    <span id="neClock" class="muted" style="font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.5px"></span>
+    <span id="neClock" style="font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:.5px"></span>
     <button class="wctl" onclick="exec('undo')" title="Undo">↶</button>
     <button class="wctl" onclick="exec('redo')" title="Redo">↷</button>
     <button class="btn small" onclick="saveNoteEd()">✓ Save</button>
@@ -3274,7 +3274,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.2.1 ready';
+  if(mark)mark.textContent='\u2713 LB3.2.2 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3679,5 +3679,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d4d2839cfd09e0',t:'MTc4OTc4MTM5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d4ffd99a1d0701',t:'MTc4OTc4MzI1NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
