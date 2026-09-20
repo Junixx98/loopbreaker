@@ -1603,60 +1603,124 @@ function moneyBodies(){
       var incS=series(S.income,function(e){ return e.src||'Other'; },function(n2,ix){ return PALETTE[ix%PALETTE.length]; });
       var expS=series(S.expenses,function(e){ return e.cat||'Other'; },function(n2){ return catColor(n2); });
       if(!incS.length&&!expS.length)return '<div class="muted" style="font-size:12px;padding:6px 0">Log an earning or an expense and your category lines will grow here — earnings and expenses together, last '+DAYS+' days.</div>';
-      function niceCeil(v){ var p=Math.pow(10,Math.floor(Math.log(v)/Math.LN10)); var n2=v/p; var f=n2<=1?1:n2<=2?2:n2<=2.5?2.5:n2<=5?5:10; return f*p; }
-      function fshort(v){ return v>=1000?(Math.round(v/100)/10)+'k':''+Math.round(v); }
-      function wd(d){ return new Date(d+'T00:00:00').toLocaleDateString('en',{weekday:'narrow'}); }
-      var mx=1; incS.concat(expS).forEach(function(sr){ sr.v.forEach(function(x){ if(x>mx)mx=x; }); });
-      mx=niceCeil(mx);
-      var W=340,H=172,padL=32,padR=8,top=16,base=H-22;
-      var span=Math.max(1,DAYS-1);
-      function X(i){ return (padL+i*(W-padL-padR)/span).toFixed(1); }
-      function Y(v){ return (base-(v/mx)*(base-top)).toFixed(1); }
-      var g='';
-      [0,3,6,9,13].forEach(function(i){ var x=X(i);
-        g+='<line x1="'+x+'" y1="'+top+'" x2="'+x+'" y2="'+base+'" stroke="rgba(120,150,200,.07)"/>'
-          +'<text x="'+x+'" y="'+(H-8)+'" font-size="8.5" fill="rgba(200,215,235,.5)" text-anchor="middle">'+wd(DA[i])+'</text>';
-      });
-      [0,.25,.5,.75,1].forEach(function(f){ var y=(base-f*(base-top)).toFixed(1);
-        g+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(120,150,200,'+(f===0?'.18':'.10')+')"/>'
-          +'<text x="4" y="'+(+y+3)+'" font-size="8" fill="rgba(200,215,235,.45)">'+fshort(mx*f)+'</text>';
-      });
-      function path(sr){
-        var pts=sr.v.map(function(v,i){ return [X(i),Y(v)]; });
-        if(pts.length<2)return '';
-        var d='M'+pts[0][0]+','+pts[0][1];
-        for(var i2=1;i2<pts.length;i2++){ var mp=((+pts[i2-1][0])+(+pts[i2][0]))/2;
-          d+=' C'+mp.toFixed(1)+','+pts[i2-1][1]+' '+mp.toFixed(1)+','+pts[i2][1]+' '+pts[i2][0]+','+pts[i2][1]; }
-        return d;
-      }
-      function draw(sr,type){
-        var d=path(sr); if(!d)return '';
-        var o='<path d="'+d+'" fill="none" stroke="'+sr.col+'" stroke-width="5" stroke-opacity=".16" stroke-linecap="round"/>'
-             +'<path d="'+d+'" fill="none" stroke="'+sr.col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-        sr.v.forEach(function(v,i){
-          if(v<=0)return;
-          var last=i===DAYS-1;
-          o+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="'+(last?3.2:2.1)+'" fill="'+sr.col+'"'+(last?' stroke="#fff" stroke-width="1.2"':'')+'/>';
-          o+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="8" fill="transparent" style="cursor:pointer" data-mpt="'+type+'|'+i+'" data-mptn="'+esc(sr.n)+'" data-mptc="'+sr.col+'" data-mptv="'+v+'" data-mptd="'+DA[i]+'"/>';
-        });
-        return o;
-      }
-      incS.forEach(function(sr){ g+=draw(sr,'i'); });
-      expS.forEach(function(sr){ g+=draw(sr,'e'); });
       function leg(secs,sign){ return '<div style="display:flex;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="pcsmall" style="margin:0 6px 0 0">'+sign+'</span>'+secs.map(function(sr){ return '<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0;font-size:11px"><span class="sw" style="background:'+sr.col+';margin:0"></span>'+esc(sr.n)+'</span>'; }).join('')+'</div>'; }
-      return '<div class="muted" style="font-size:12px;margin-bottom:6px">Daily totals, last '+DAYS+' days — earnings and expenses in ONE chart, every line in its category color. Tap a dot for details.</div>'
-        +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'+g+'</svg>'
+      return '<div class="muted" style="font-size:12px;margin-bottom:6px">Daily totals, last '+DAYS+' days — every line in its category color. 🔍 zoom · drag to pan · pinch on touch · tap a point for details.</div>'
+        +'<div style="display:flex;justify-content:flex-end;gap:6px;margin:-2px 0 4px">'
+        +'<button class="wctl" id="mgZo" title="Zoom out" style="font-size:12px;padding:3px 9px">🔍−</button>'
+        +'<button class="wctl" id="mgZi" title="Zoom in" style="font-size:12px;padding:3px 9px">🔍+</button>'
+        +'<button class="wctl" id="mgZr" title="Reset zoom" style="font-size:12px;padding:3px 9px">⤢</button></div>'
+        +'<div id="mgBox" style="touch-action:none"></div>'
         +(incS.length?leg(incS,'＋ Earnings'):'<div class="muted" style="font-size:11px;margin-top:6px">No earnings logged yet.</div>')
         +(expS.length?leg(expS,'－ Expenses'):'<div class="muted" style="font-size:11px;margin-top:2px">No expenses logged yet.</div>');
     }, bind:function(){
-      var c=document.querySelector('[data-wid="mgraph"]'); if(!c)return;
-      c.onclick=function(e){
+      var card=document.querySelector('[data-wid="mgraph"]'); if(!card)return;
+      var box=document.getElementById('mgBox'); if(!box)return;
+      var DAYS=14;
+      var DA=[]; for(var q=DAYS-1;q>=0;q--)DA.push(addDays(todayStr(),-q));
+      function series(items,keyF,colF){
+        var names=[]; items.forEach(function(e){ var n2=keyF(e); if(names.indexOf(n2)<0)names.push(n2); });
+        names.sort();
+        return names.slice(0,8).map(function(n2,ix){
+          var per={}; DA.forEach(function(d){ per[d]=0; });
+          items.forEach(function(e){ if(keyF(e)===n2&&per[e.date]!==undefined)per[e.date]+=(+e.amount||0); });
+          return {n:n2,col:colF(n2,ix),v:DA.map(function(d){ return per[d]; })};
+        });
+      }
+      var incS=series(S.income,function(e){ return e.src||'Other'; },function(n2,ix){ return PALETTE[ix%PALETTE.length]; });
+      var expS=series(S.expenses,function(e){ return e.cat||'Other'; },function(n2){ return catColor(n2); });
+      if(!incS.length&&!expS.length)return;
+      var W=340,H=172,padL=40,padR=10,top=14,base=H-26,plotW=W-padL-padR;
+      var v={a:0,b:DAYS-1};
+      var GMAX=1; incS.concat(expS).forEach(function(sr){ sr.v.forEach(function(x){ if(x>GMAX)GMAX=x; }); });
+      function fshort(x){ return x>=1000?((Math.round(x/100)/10)+'k'):(''+x); }
+      function niceStep(x){ if(x<=0)return 1; var p=Math.pow(10,Math.floor(Math.log(x)/Math.LN10)); var f=x/p; return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p; }
+      function dlabel(i){ return new Date(DA[i]+'T00:00:00').toLocaleDateString('en',{month:'short',day:'numeric'}); }
+      function draw(){
+        var va=v.a, vb=v.b;
+        var i0=Math.max(0,Math.floor(va)-1), i1=Math.min(DAYS-1,Math.ceil(vb)+1);
+        var vm=0, all=incS.concat(expS);
+        for(var i=i0;i<=i1;i++)all.forEach(function(sr){ if(sr.v[i]>vm)vm=sr.v[i]; });
+        var eff=(vm>0?vm:GMAX);
+        var step=Math.max(1,niceStep(eff/4)), mx=step*Math.max(1,Math.ceil(eff/step));
+        function X(ii){ return (padL+(ii-va)/(vb-va)*plotW).toFixed(1); }
+        function Y(t){ return (base-(t/mx)*(base-top)).toFixed(1); }
+        var g='';
+        var ticks=Math.max(1,Math.round(mx/step));
+        if(vm<=0){ g+='<text x="'+(padL+plotW/2)+'" y="'+((top+base)/2)+'" font-size="10" fill="rgba(200,215,235,.5)" text-anchor="middle">No entries in this range — drag sideways or zoom out 🔍−</text>'; }
+        for(var k=0;k<=ticks;k++){ var tv=k*step, yv=Y(tv);
+          g+='<line x1="'+padL+'" y1="'+yv+'" x2="'+(W-padR)+'" y2="'+yv+'" stroke="rgba(120,150,200,'+(k===0?'.22':'.10')+')"/>'
+            +'<text x="4" y="'+(+yv+3)+'" font-size="9" fill="rgba(200,215,235,.55)">'+fshort(tv)+'</text>';
+        }
+        var st=Math.max(1,Math.ceil((vb-va)/5));
+        for(var i2=Math.ceil(va);i2<=vb+1e-9;i2+=st){ var xi=X(i2);
+          g+='<line x1="'+xi+'" y1="'+top+'" x2="'+xi+'" y2="'+base+'" stroke="rgba(120,150,200,.07)"/>'
+            +'<text x="'+xi+'" y="'+(H-9)+'" font-size="9" fill="rgba(200,215,235,.55)" text-anchor="middle">'+dlabel(i2)+'</text>';
+        }
+        function drawS(sr,type){
+          var pts=[]; for(var i3=i0;i3<=i1;i3++)pts.push([X(i3),Y(sr.v[i3]),i3]);
+          var d=pts.map(function(p4,k2){ return (k2?'L':'M')+p4[0]+' '+p4[1]; }).join(' ');
+          var o='<path d="'+d+'" fill="none" stroke="'+sr.col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+          var lp=pts[pts.length-1];
+          o+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="3" fill="'+sr.col+'"/>';
+          pts.forEach(function(p4){ if(sr.v[p4[2]]>0&&p4[2]>=va-1e-9&&p4[2]<=vb+1e-9)
+            o+='<circle cx="'+p4[0]+'" cy="'+p4[1]+'" r="7" fill="transparent" style="cursor:pointer" data-mpt="'+type+'|'+p4[2]+'" data-mptn="'+esc(sr.n)+'" data-mptc="'+sr.col+'" data-mptv="'+sr.v[p4[2]]+'" data-mptd="'+DA[p4[2]]+'"/>'; });
+          return o;
+        }
+        incS.forEach(function(sr){ g+=drawS(sr,'i'); });
+        expS.forEach(function(sr){ g+=drawS(sr,'e'); });
+        box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'+g+'</svg>';
+      }
+      function zoomAt(f,factor){
+        var span=v.b-v.a, ns=Math.min(DAYS-1,Math.max(2,span*factor));
+        var r2=ns/span, a2=f-(f-v.a)*r2; var b2=a2+ns;
+        if(a2<0){a2=0;b2=ns;} if(b2>DAYS-1){b2=DAYS-1;a2=b2-ns;}
+        v.a=a2;v.b=b2; draw();
+      }
+      var zi=document.getElementById('mgZi'), zo=document.getElementById('mgZo'), zr=document.getElementById('mgZr');
+      if(zi)zi.onclick=function(){ zoomAt((v.a+v.b)/2,0.6); };
+      if(zo)zo.onclick=function(){ zoomAt((v.a+v.b)/2,1/0.6); };
+      if(zr)zr.onclick=function(){ v.a=0;v.b=DAYS-1; draw(); };
+      box.addEventListener('wheel',function(e){ e.preventDefault(); if(!box.clientWidth)return;
+        var r3=box.getBoundingClientRect();
+        var fx=v.a+((e.clientX-r3.left)/r3.width*W-padL)/plotW*(v.b-v.a);
+        zoomAt(fx,e.deltaY>0?1.15:0.87);
+      },{passive:false});
+      var drag=null, pinch=null, moved=0;
+      box.addEventListener('mousedown',function(e){ drag={x:e.clientX,a:v.a,b:v.b}; moved=0; });
+      box.addEventListener('mousemove',function(e){ if(!drag||!box.clientWidth)return; var dx=e.clientX-drag.x;
+        if(Math.abs(dx)>4)moved=1;
+        var di=-dx/(box.clientWidth*plotW/W)*(drag.b-drag.a);
+        v.a=Math.min(Math.max(drag.a+di,0),DAYS-1-(drag.b-drag.a)); v.b=v.a+(drag.b-drag.a); draw(); });
+      box.addEventListener('mouseup',function(){ drag=null; });
+      box.addEventListener('mouseleave',function(){ drag=null; });
+      box.addEventListener('touchstart',function(e){
+        if(e.touches.length===1){ drag={x:e.touches[0].clientX,a:v.a,b:v.b}; moved=0; pinch=null; }
+        else if(e.touches.length===2){ drag=null; moved=0;
+          pinch={d:Math.abs(e.touches[0].clientX-e.touches[1].clientX)||1, f:(v.a+v.b)/2, a:v.a, b:v.b}; }
+      },{passive:true});
+      box.addEventListener('touchmove',function(e){ if(!box.clientWidth)return;
+        if(pinch&&e.touches.length===2){ e.preventDefault();
+          var d2=Math.abs(e.touches[0].clientX-e.touches[1].clientX)||1;
+          var ns2=Math.min(DAYS-1,Math.max(2,pinch.b-pinch.a)*pinch.d/d2);
+          var r4=ns2/(pinch.b-pinch.a), a2=pinch.f-(pinch.f-pinch.a)*r4; var b2=a2+ns2;
+          if(a2<0){a2=0;b2=ns2;} if(b2>DAYS-1){b2=DAYS-1;a2=b2-ns2;}
+          v.a=a2;v.b=b2; draw();
+        } else if(drag&&e.touches.length===1){ e.preventDefault();
+          var dx=e.touches[0].clientX-drag.x; if(Math.abs(dx)>4)moved=1;
+          var di=-dx/(box.clientWidth*plotW/W)*(drag.b-drag.a);
+          v.a=Math.min(Math.max(drag.a+di,0),DAYS-1-(drag.b-drag.a)); v.b=v.a+(drag.b-drag.a); draw();
+        }
+      },{passive:false});
+      box.addEventListener('touchend',function(){ drag=null; pinch=null; });
+      box.addEventListener('click',function(e){
+        if(moved){moved=0;return;}
         var t=e.target.closest?e.target.closest('[data-mpt]'):null; if(!t)return;
         var isInc=t.dataset.mpty==='i';
         openModal('<h3><span class="sw" style="background:'+t.dataset.mptc+';display:inline-block;vertical-align:-2px"></span> '+t.dataset.mptn+'</h3>'
           +'<div class="muted" style="font-size:12px">'+new Date(t.dataset.mptd+'T00:00:00').toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric'})+'</div>'
           +'<div class="list-item" style="margin-top:8px"><span style="flex:1">'+(isInc?'Earned that day':'Spent that day')+'</span><b style="color:'+(isInc?'var(--accent)':'#f87171')+'">'+(isInc?'+₱':'−₱')+fmtPeso(+t.dataset.mptv).replace('₱','')+'</b></div>',function(){},true);
-      };
+      });
+      draw();
     }},
     minc:{ b:function(){
       return '<div class="row" style="margin-top:0"><input type="number" id="incAmt" placeholder="Amount ₱" min="0" step="0.01">'
@@ -3489,7 +3553,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.3 ready';
+  if(mark)mark.textContent='\u2713 LB3.3.4 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3894,5 +3958,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e4692ac853e2fb',t:'MTc4OTk0NDg1NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e49891bed71787',t:'MTc4OTk0Njc5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
