@@ -35,7 +35,7 @@ header{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px s
 header h1{font-size:17px;letter-spacing:.5px}
 header h1 span{color:var(--accent)}
 #hdrClock{margin-left:auto;text-align:right;line-height:1.15}
-#hdrTime{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05}
+#hdrTime{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap}
 #hdrDate{font-size:13px;color:var(--muted)}
 main{max-width:780px;margin:0 auto;padding:16px}
 .wcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
@@ -88,6 +88,7 @@ nav button{flex:1;background:none;border:none;color:var(--muted);padding:9px 2px
 .neTop{display:flex;gap:8px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));align-items:center;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:12;background:var(--bg)}
 .nePanel .tbtn.on{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .ncard{padding:12px 12px 12px 16px}
+@media(max-width:640px){#hdrTime{font-size:23px}#hdrDate{font-size:10px;white-space:normal}}
 .mlock{position:fixed;inset:0;background:var(--bg);z-index:170;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 .mlock.on{display:flex}
 .mgrid{display:grid;grid-template-columns:repeat(3,70px);gap:13px;margin:16px 0}
@@ -534,7 +535,10 @@ function reconcSections(){
   if(S.goalRange!=='week'&&S.goalRange!=='month'&&S.goalRange!=='yearly')S.goalRange='week';
   if(!S.routActive||!secList().some(function(g){return g.key===S.routActive;}))S.routActive=(secList()[0]||{}).key||null;
 
+  if(!S.sgoal||typeof S.sgoal!=='object'||Array.isArray(S.sgoal))S.sgoal={target:0,saved:0};
+  if(S.goals&&!Array.isArray(S.goals)&&+S.goals.target>0&&!S.sgoal.target){ S.sgoal={target:+S.goals.target,saved:+S.goals.saved||0}; }
   if(!Array.isArray(S.goals))S.goals=[];
+  if(Array.isArray(S.goals)&&S.goals.target!==undefined){ if(!S.sgoal.target&&+S.goals.target>0)S.sgoal={target:+S.goals.target,saved:+S.goals.saved||0}; try{ delete S.goals.target; delete S.goals.saved; }catch(e){} }
   if(!S.moreLock||typeof S.moreLock!=='object'||Array.isArray(S.moreLock))S.moreLock={on:false,type:'pattern',code:''};
   if(S.quotes!==null){ if(!Array.isArray(S.quotes))S.quotes=null; else { S.quotes=S.quotes.filter(function(q){return typeof q==='string'&&q.trim();}); if(!S.quotes.length)S.quotes=null; } }
   if(!S.ring)S.ring='chime';
@@ -1611,13 +1615,19 @@ delete S.budgets[c];
       nc.onkeydown=function(e){ if(e.key==='Enter')document.getElementById('btnNewCat').click(); };
     }},
     mgoal:{ b:function(){
-      const g=S.goals;
+      const g=S.sgoal||{target:0,saved:0};
+      const t=+g.target||0, sv=+g.saved||0;
       let html;
-      if(g.target>0){
-        const pct=Math.min(100,Math.round(g.saved/g.target*100));
-        html='<div>Saved <b>'+fmtPeso(g.saved)+'</b> of <b>'+fmtPeso(g.target)+'</b> — '+pct+'% 🐷</div>'
+      const reached=t>0&&sv>=t;
+      if(t>0){
+        const pct=Math.min(100,Math.round(sv/t*100));
+        html='<div>Saved <b class="pos">'+fmtPeso(sv)+'</b> of <b>'+fmtPeso(t)+'</b> — '+pct+'% 🐷</div>'
           +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
+          +(reached
+            ?'<div style="color:var(--accent);font-weight:800;font-size:14px;margin-top:4px">🎉 GOAL REACHED!'+(sv>t?' '+fmtPeso(sv-t)+' over the top — amazing.':'')+'</div>'
+            :'<div class="muted" style="font-size:11px">'+fmtPeso(Math.max(0,t-sv))+' to go 🎯</div>')
           +'<div class="row"><input type="number" id="saveAmt" placeholder="Add savings ₱"><button class="btn small" id="btnSaveIt" style="flex:.4">Save it</button></div>'
+          +(reached?'<div class="row"><button class="btn small" id="btnNewGoal" style="width:100%">🎯 Start a new goal (empty the piggy)</button></div>':'')
           +'<div class="row"><button class="btn ghost small" id="btnSetGoal">Change goal</button></div>';
       } else {
         html='<div class="muted">No goal yet — even ₱1,000 is a worthy first goal.</div><div class="row"><button class="btn small" id="btnSetGoal">Set goal</button></div>';
@@ -1625,17 +1635,28 @@ delete S.budgets[c];
       return html;
     }, bind:function(){
       document.getElementById('btnSetGoal').onclick=function(){
-        uiPrompt('Savings goal in pesos:',S.goals.target||'',function(v){
+        uiPrompt('Savings goal in pesos:',(S.sgoal&&S.sgoal.target)||'',function(v){
           if(v===null||v==='')return;
-          S.goals.target=parseFloat(v)||0; save(); renderAll();
+          S.sgoal=(S.sgoal||{}); S.sgoal.target=parseFloat(v)||0; if(!S.sgoal.saved)S.sgoal.saved=0; save(); renderAll();
         });
       };
       const b=document.getElementById('btnSaveIt');
       if(b)b.onclick=function(){
         const a=parseFloat(document.getElementById('saveAmt').value);
-        if(!a||a<=0)return;
-        S.goals.saved+=a; save(); renderAll();
+        if(!a||a<=0)return uiToast('Enter an amount 🐷');
+        S.sgoal=(S.sgoal||{target:0,saved:0}); S.sgoal.saved=(+S.sgoal.saved||0)+a; save(); renderAll(); buzz();
+        if(S.sgoal.target>0&&S.sgoal.saved>=S.sgoal.target)uiToast('🎉 GOAL REACHED!'); else uiToast('🐷 Saved! '+fmtPeso(S.sgoal.saved)+' of '+fmtPeso(S.sgoal.target||0));
       };
+      var nb=document.getElementById('btnNewGoal'); if(nb)nb.onclick=function(){
+        uiPrompt('New goal in pesos:','',function(v2){
+          var n2=parseFloat(v2); if(!n2||n2<=0)return uiToast('Enter an amount 🎯');
+          S.sgoal={target:n2,saved:0,celebrated:false}; save(); renderAll(); buzz(); uiToast('🎯 New goal: '+fmtPeso(n2)+' — piggy emptied');
+        });
+      };
+      (function(){ var gg=S.sgoal||{};
+        if(gg.target>0&&(+(gg.saved||0))>=gg.target&&!gg.celebrated){ gg.celebrated=true; save();
+          setTimeout(function(){ playTune(S.ring||'chime'); uiToast('🎉 Savings goal reached — congrats! Start a new one when ready.'); try{ lbNotify('🎉 Savings goal reached! Time for a new one?'); }catch(e){} },300); }
+      })();
     }},
     mrec:{ b:function(){
       const rows=[].concat(
@@ -3274,7 +3295,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.2.2 ready';
+  if(mark)mark.textContent='\u2713 LB3.2.4 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3679,5 +3700,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d4ffd99a1d0701',t:'MTc4OTc4MzI1NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e0491f39805783',t:'MTc4OTkwMTU5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
