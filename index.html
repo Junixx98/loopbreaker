@@ -825,26 +825,44 @@ function todayBodies(){
     }},
     tcd:{ b:function(){
       var t=todayStr();
+      var cdf=S.cdFilter||'all';
+      function clabel(k){ var c=CATS[k]; if(c)return c[1]; var cc=customCatFor(k); return cc?cc[1]:'Personal'; }
       var evs=(S.events2||[]).filter(function(e){ return e.inCd!==false && e.date>=t; })
-        .map(function(e){ return {id:e.id,date:e.date,title:e.title,fromEvent:true}; });
-      var cds=evs.concat(S.countdowns||[]).slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+        .map(function(e){ return {id:e.id,date:e.date,title:e.title,cat:e.cat||'personal',fromEvent:true}; });
+      var cds=evs.concat((S.countdowns||[]).map(function(c){ return {id:c.id,date:c.date,title:c.title,cat:c.cat||'personal'}; }));
+      var head='<div class="row" style="margin:0 0 6px;align-items:center"><div class="pcsmall" style="margin:0 6px 0 0;flex:0 0 auto">🗂 Show</div>'
+        +mkPick('cdFilter','Show category','CDFILT','all',cdf==='all'?'🗂 All categories':clabel(cdf))+'</div>';
+      var order=['personal','school','work','trading','money','news'];
+      (S.customCats||[]).forEach(function(c){ if(order.indexOf(c.id)<0)order.push(c.id); });
+      cds.forEach(function(c){ if(order.indexOf(c.cat)<0)order.push(c.cat); });
+      var pick=cds.filter(function(c){ return cdf==='all'||c.cat===cdf; });
       if(!cds.length)
-        return '<span class="muted">No countdowns yet. Add big dates \u2014 then ask: "What will I have accomplished when these hit zero?"</span>'
+        return head+'<span class="muted">No countdowns yet. Add big dates \u2014 then ask: "What will I have accomplished when these hit zero?"</span>'
           +'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
-      var html=cds.map(function(c){
+      if(!pick.length)
+        return head+'<div class="muted" style="padding:6px 0">No countdowns in "'+clabel(cdf)+'".</div>'
+          +'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
+      pick.sort(function(a,b){ var ca=order.indexOf(a.cat),cb=order.indexOf(b.cat);
+        return (ca-cb)||(a.date<b.date?-1:a.date>b.date?1:0); });
+      var lastCat=null;
+      var html='';
+      pick.forEach(function(c){
+        if(cdf==='all'&&c.cat!==lastCat){ lastCat=c.cat; var cd2=catDot(c.cat);
+          html+='<div class="pcsmall" style="margin-top:8px"><span class="sw" style="background:'+cd2[0]+'"></span>'+esc(clabel(c.cat))+'</div>'; }
         var diff=Math.ceil((new Date(c.date+'T00:00:00')-new Date(t+'T00:00:00'))/86400000);
         var big=diff>=0?('<b style="font-size:26px;color:var(--accent2)">'+diff+'</b> <span class="muted">day'+(diff===1?'':'s')+' left</span>'):'<b style="color:var(--accent)">\u{1F389} passed</b>';
-        return '<div class="list-item">'
+        html+='<div class="list-item">'
           +'<span style="flex:1;cursor:pointer" data-cded="'+c.id+'">'+big+'<br><b>'+esc(c.title)+'</b> <span class="muted">'+c.date+'</span></span>'
           +'<button class="x" data-cddel="'+c.id+'">\u00d7</button></div>';
-      }).join('');
-      return html+'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
+      });
+      return head+html+'<div class="row"><button class="btn small" id="btnAddCountdown">\uff0b Add countdown</button></div>';
     }, bind:function(){
+      var cfi=document.getElementById('cdFilter'); if(cfi){ cfi.dataset.live='1'; cfi.onchange=function(){ S.cdFilter=cfi.value||'all'; save(); renderAll(); }; }
       var ab=document.getElementById('btnAddCountdown');
       if(ab)ab.onclick=function(){ cdEditId=null; cdModal('',''); };
       document.querySelectorAll('[data-cded]').forEach(function(el){ el.onclick=function(){
         var c=(S.countdowns||[]).find(function(x){return x.id===el.dataset.cded;}); if(!c)return;
-        cdEditId=c.id; cdModal(c.title,c.date);
+        cdEditId=c.id; cdModal(c.title,c.date,c.cat||'personal');
       }; });
       document.querySelectorAll('[data-cddel]').forEach(function(el){ el.onclick=function(ev){
         if(ev)ev.stopPropagation();
@@ -1270,6 +1288,22 @@ function calBodies(){
     document.querySelectorAll('#tab-cal [data-date]').forEach(function(el){ el.onclick=function(){ openDay(el.dataset.date); }; });
   }}};
 }
+window.routDayDetail=function(dstr){
+  var D=S.done[dstr]||{}, all=allItems();
+  var dn=all.filter(function(i){return D[i.id];}).length, tot=all.length;
+  var groups=secList().map(function(g){
+    var l=S.checklist[g.key]||[]; if(!l.length)return '';
+    return '<div class="pcsmall" style="margin-top:8px">'+g.name+'</div>'+l.map(function(i){
+      var ok=!!D[i.id];
+      return '<div class="list-item" style="padding:4px 0"><span style="font-weight:800;color:'+(ok?'var(--accent)':'#f87171')+'">'+(ok?'✓':'✗')+'</span><span style="flex:1;font-size:13px'+(ok?'':'')+'">'+esc(i.text)+'</span></div>';
+    }).join('');
+  }).join('');
+  openModal('<h3>📊 '+new Date(dstr+'T00:00:00').toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric'})+'</h3>'
+    +(tot?'<div class="grid2"><div class="trade-card" style="text-align:center;padding:10px"><b style="font-size:20px;color:var(--accent)">'+dn+'</b><div class="muted" style="font-size:11px">routine complete</div></div>'
+    +'<div class="trade-card" style="text-align:center;padding:10px"><b style="font-size:20px;color:#f87171">'+(tot-dn)+'</b><div class="muted" style="font-size:11px">routine not complete</div></div></div>':'')
+    +(tot?groups:'<div class="muted center" style="padding:8px 0">No routines recorded for this day.</div>')
+    +'<div class="row"><button class="btn ghost" onclick="closeModal()">Close</button><button class="btn" onclick="openDay(\''+dstr+'\')">‹ Back to day</button></div>');
+};
 function openDay(dateStr){ window.evPendingNote='';
   const nice=new Date(dateStr+'T00:00:00').toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const ev=eventsOn(dateStr), note=S.notes[dateStr]||{text:'',mood:''}, hol=isHoliday(dateStr);
@@ -1289,7 +1323,7 @@ function openDay(dateStr){ window.evPendingNote='';
   openModal(
     '<h3>'+nice+'</h3>'
     +(hol?'<div class="banner" style="color:#fca5a5;border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.1)">🇵🇭 <b>'+esc(hol)+'</b></div>':'')
-    +(items.length?'<div class="muted" style="margin-bottom:10px">✅ Routine that day: '+dn+'/'+items.length+' ('+Math.round(dn/items.length*100)+'%)</div>':'')
+    +(items.length?'<div class="list-item" style="margin-bottom:10px;cursor:pointer" onclick="routDayDetail(\''+dateStr+'\')"><span style="flex:1">✅ <b>Routine that day: '+dn+'/'+items.length+' ('+Math.round(dn/items.length*100)+'%)</b> <span class="muted">— tap to see what was done</span></span><span class="muted">›</span></div>':'')
     +'<div class="section-title">Events / activities</div>'+evHtml
     +'<div class="row"><input type="text" id="evTitle" placeholder="Add event, activity, or news…"></div>'
     +'<div class="row" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="evInCd" checked style="accent-color:var(--accent);width:16px;height:16px"> 📌 Show this event in Countdown</label></div>'
@@ -2959,20 +2993,26 @@ window.OPT={
   EXPCATS:function(){ var cust=(S.extraCats||[]); var base=allCats().filter(function(x){ return cust.indexOf(x)<0; }).map(function(n){ return {v:n,l:n,custom:'exp_std'}; }); return base.concat(cust.map(function(n){ return {v:n,l:'★ '+n,custom:'exp'}; })).concat([{v:'__addexp__',l:'＋ Add your own…'}]); },
   IMPACTS:function(){ return [{v:'',l:'— no impact —'}].concat((S.impacts||[]).map(function(i){return {v:i.emoji+' '+i.label,l:i.emoji+' '+i.label};})); },
   CATS:function(){ var base=[{v:'personal',l:'🔵 Personal'},{v:'school',l:'🟣 School'},{v:'work',l:'🟠 Work'},{v:'trading',l:'🟢 Trading'},{v:'money',l:'🟡 Money'},{v:'news',l:'🔴 News'}]; (S.customCats||[]).forEach(function(c){ base.push({v:c.id,l:'● '+c.label,custom:'cat'}); }); base.push({v:'__addcat__',l:'＋ New category & color…'}); return base; },
+  CDFILT:function(){ var base=[{v:'all',l:'🗂 All categories'}]; ['personal','school','work','trading','money','news'].forEach(function(k){ base.push({v:k,l:CATS[k][1]}); }); (S.customCats||[]).forEach(function(c){ base.push({v:c.id,l:c.label}); }); return base; },
   RECURS:[{v:'',l:'once'},{v:'weekly',l:'every week'},{v:'monthly',l:'every month'},{v:'yearly',l:'every year'}]
 };
 let cdEditId=null;
-function cdModal(tt,dd){
+function cdModal(tt,dd,cc){
+  var defC=cc||(S.cdFilter&&S.cdFilter!=='all'?S.cdFilter:'personal');
+  var cdd=CATS[defC]||customCatFor(defC)||CATS.personal;
   openModal('<h3>\u{1F3AF} Countdown</h3>'
     +'<label class="fl">The big date (e.g. "My 19th birthday")</label><input id="cdT" value="'+esc(tt)+'">'
     +'<label class="fl">Date</label><input type="date" id="cdD" value="'+esc(dd)+'">'
+    +'<div class="row" style="margin-top:0"><label class="fl" style="flex:0 0 auto;align-self:center">Category</label>'
+    +mkPick('cdCat','Category','CATS',defC,(cdd[1]?'':'● ')+esc(cdd[1]))+'</div>'
     +'<div class="row"><button class="btn" id="cdOk">Save countdown</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
   document.getElementById('cdOk').onclick=function(){
     var t2=document.getElementById('cdT').value.trim(), d2=document.getElementById('cdD').value;
+    var c3=document.getElementById('cdCat'); var catv=(c3&&c3.value)||'personal';
     if(!t2||!d2)return uiToast('Give it a title and a date \u{1F642}');
     S.countdowns=S.countdowns||[];
-    if(cdEditId){ var c=S.countdowns.find(function(x){return x.id===cdEditId;}); if(c){c.title=t2;c.date=d2;} }
-    else S.countdowns.push({id:uid(),title:t2,date:d2});
+    if(cdEditId){ var c=S.countdowns.find(function(x){return x.id===cdEditId;}); if(c){c.title=t2;c.date=d2;c.cat=catv;} }
+    else S.countdowns.push({id:uid(),title:t2,date:d2,cat:catv});
     save(); closeModal(); renderAll(); buzz();
   };
 }
@@ -3625,7 +3665,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.4.3 ready';
+  if(mark)mark.textContent='\u2713 LB3.5 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -4039,5 +4079,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f64525fb1bb78b',t:'MTc5MDEzMjEyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f8158368247a6b',t:'MTc5MDE1MTE0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
