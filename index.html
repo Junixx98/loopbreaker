@@ -2573,8 +2573,8 @@ function moreBodies(){
           :'<div class="row" style="margin-top:0"><button class="btn ghost" id="mlSetP">🖐️ Set pattern lock</button><button class="btn ghost" id="mlSetW">🔡 Set password lock</button></div><div class="muted" style="font-size:11px">Pattern, letters, numbers or a complex password — it gates the Settings tab.</div>')
         +'<div class="section-title">⏰ Countdown pop-ups</div><div class="row" style="margin-top:0"><button class="btn ghost" id="cdPerm">🔔 Enable pop-up reminders</button></div><div class="muted" style="font-size:11px">Pops up on the day (and the day before) each countdown; with permission it also notifies you outside the app.</div>'
         +'<div class="section-title">💬 Loading-screen quotes</div>'
-        +(S.quotes&&S.quotes.length?S.quotes.map(function(q,i){ return '<div class="list-item" style="padding:5px 0"><span style="flex:1;font-size:12px">'+esc(q)+'</span><button class="x" data-qre="'+i+'">✏️</button><button class="x" data-qde="'+i+'">×</button></div>'; }).join(''):'<div class="muted" style="font-size:11px">Showing the built-in quotes — add one below and yours take over.</div>')
-        +'<div class="row" style="margin-top:4px"><button class="btn ghost small" id="qAdd">＋ Add quote</button>'+(S.quotes&&S.quotes.length?'<button class="btn ghost small" id="qReset">↺ Use built-in quotes</button>':'')+'</div>'
+        +(S.quotes&&S.quotes.length?S.quotes.map(function(q,i){ return '<div class="list-item" style="padding:5px 0"><span style="flex:1;font-size:12px">'+esc(q)+'</span><button class="x" data-qre="'+i+'">✏️</button><button class="x" data-qde="'+i+'">×</button></div>'; }).join(''):'<div class="muted" style="font-size:11px">The built-in quotes always play — add yours below and they join the same rotation.</div>')
+        +'<div class="row" style="margin-top:4px"><button class="btn ghost small" id="qAdd">＋ Add quote</button>'+(S.quotes&&S.quotes.length?'<button class="btn ghost small" id="qReset">↺ Remove my added quotes</button>':'')+'</div>'
         +'<div class="section-title">🧹 Dashboard customization</div>'
         +'<div class="muted" style="margin-bottom:8px">Clean mode is ON by default — widgets show only their title and a － button. Tap <b>✏️ Customize layout</b> (top-right of any section) to resize <b>S/M/L</b>, reorder <b>▲▼</b>, collapse, or hide widgets.</div>';
       const hidden=[];
@@ -2630,7 +2630,7 @@ S.widgets={}; S.editMode=false; save(); renderAll();
         try{ if(!window.Notification){ uiToast('Not supported here — in-app pop-ups still work'); return; }
           Notification.requestPermission().then(function(r){ uiToast(r==='granted'?'🔔 Pop-ups enabled':'Pop-ups blocked — in-app reminders still work'); }); }catch(e){ uiToast('In-app reminders stay on'); } };
       var qa=document.getElementById('qAdd'); if(qa)qa.onclick=function(){ uiAsk('New loading quote','',function(q){ q=(q||'').trim(); if(!q)return; if(!S.quotes)S.quotes=[]; S.quotes.push(q); save(); renderAll(); buzz(); }); };
-      var qr=document.getElementById('qReset'); if(qr)qr.onclick=function(){ uiConfirm('Go back to the built-in quotes?',function(){ S.quotes=null; save(); renderAll(); }); };
+      var qr=document.getElementById('qReset'); if(qr)qr.onclick=function(){ uiConfirm('Remove your added quotes? The built-in rotation continues.',function(){ S.quotes=null; save(); renderAll(); }); };
       document.querySelectorAll('[data-qre]').forEach(function(el){ el.onclick=function(){ var i=+el.dataset.qre; uiAsk('Edit quote',S.quotes[i]||'',function(q){ q=(q||'').trim(); if(!q)return; S.quotes[i]=q; save(); renderAll(); }); }; });
       document.querySelectorAll('[data-qde]').forEach(function(el){ el.onclick=function(){ S.quotes.splice(+el.dataset.qde,1); if(!S.quotes.length)S.quotes=null; save(); renderAll(); }; });
       document.getElementById('btnTheme2').onclick=function(){ S.dark=!S.dark; save(); applyTheme(); };
@@ -2678,17 +2678,20 @@ function renderReview(days){
 // ================= V2.1 HELPERS: visuals + images + rich text =================
 function barChart(vals,maxv,tap){
   var mx=(maxv||0); vals.forEach(function(x){ if(x.v>mx)mx=x.v; if(x.m&&x.v+x.m>mx)mx=x.v+x.m; }); mx=mx||1;
-  return '<div style="display:flex;align-items:flex-end;gap:'+(vals.length>15?'2px':'6px')+';margin-top:6px">'
+  var scroll=vals.length>10;
+  return (scroll?'<div class="muted" style="font-size:9.5px;text-align:right;margin-top:6px;opacity:.65">↔ swipe to see all days</div>':'')
+    +'<div style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;margin-top:2px;padding-bottom:2px">'
+    +'<div style="display:flex;align-items:flex-end;gap:6px;width:max-content;min-width:100%">'
     +vals.map(function(x,i){ var h=Math.max(3,Math.round((x.v/mx)*56));
       var hm=(x.m&&x.v+x.m>0)?Math.max(2,Math.round((x.m/mx)*56)):0;
       var seg=(hm&&x.v>0)?'<div style="width:100%;height:'+hm+'px;background:rgba(248,113,113,.72);border-radius:2px"></div>':'';
       var main=(x.v>0)?('<div style="width:100%;height:'+h+'px;border-radius:'+(hm?'2px 2px 7px 7px':'7px 7px 2px 2px')+';background:linear-gradient(180deg,var(--accent),#fbbf24)"></div>')
               :((hm)?'<div style="width:100%;height:'+Math.max(3,hm)+'px;border-radius:7px;background:rgba(248,113,113,.72)"></div>':'<div style="width:100%;height:3px;border-radius:7px;background:var(--line)"></div>');
-      return '<div style="flex:1;text-align:center;min-width:0'+(tap?';cursor:pointer':'')+'"'+(tap?' data-'+tap+'="'+i+'"':'')+'>'
+      return '<div style="'+(scroll?'flex:0 0 30px':'flex:1 1 0')+';text-align:center;min-width:0'+(tap?';cursor:pointer':'')+'"'+(tap?' data-'+tap+'="'+i+'"':'')+'>'
         +'<div style="height:56px;display:flex;flex-direction:column;justify-content:flex-end">'+(x.v>0?(seg+main):main)+'</div>'
         +'<div style="font-size:9px;font-weight:800;margin-top:3px;color:'+(x.v>0?'var(--accent)':(hm?'#f87171':'var(--muted)'))+'">'+((x.v>0||hm)?x.v+'%':'–')+'</div>'
         +'<div class="muted" style="font-size:9px">'+esc(x.l)+'</div></div>'; }).join('')
-    +'</div>';
+    +'</div></div>';
 }
 function dayChart(vals,maxv){
   var mx=(maxv||0);
@@ -2976,7 +2979,8 @@ function cdModal(tt,dd){
 window.uiAsk=function(title,ph,cb){
   var old=document.getElementById('askOverlay'); if(old&&old.parentNode){old.parentNode.removeChild(old);}
   var ov=document.createElement('div'); ov.className='modal-bg on'; ov.id='askOverlay'; ov.style.zIndex='6400';
-  ov.innerHTML='<div class="modal"><h3>'+esc(title)+'</h3><input type="text" id="askIn" placeholder="'+esc(ph||'')+'" maxlength="60">'
+  var ml=/quote/i.test(title)?120:60;
+  ov.innerHTML='<div class="modal"><h3>'+esc(title)+'</h3><input type="text" id="askIn" placeholder="'+esc(ph||'')+'" maxlength="'+ml+'">'
     +'<div class="row"><button class="btn" id="askOk" style="flex:1">OK</button><button class="btn ghost" id="askNo">Cancel</button></div></div>';
   document.body.appendChild(ov);
   var inp=document.getElementById('askIn'); setTimeout(function(){ if(inp&&inp.focus)inp.focus(); },60);
@@ -3621,7 +3625,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.4 ready';
+  if(mark)mark.textContent='\u2713 LB3.4.3 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -3630,7 +3634,8 @@ setInterval(function(){ try{ if(todayStr()!==curDay){ curDay=todayStr(); renderA
 </script>
 <script>
 ;(function(){
-  var QUOTES=(S.quotes&&S.quotes.length)?S.quotes:["Small steps, every day, forever.","One good day. Then another.","Discipline is choosing what you want most over what you want now.","Show up first. Motivation follows action.","No zero days.","You fall to the level of your systems.","The market pays the patient.","Protect the streak. Protect the capital.","Boredom is the price of consistency.","Slow is smooth. Smooth is fast.","Compound interest applies to habits too.","Your future self is watching today's choices.","Win the morning, win the day.","The loop breaks today, or it doesn't.","I am becoming a disciplined forex trader."];
+  var QB=["Small steps, every day, forever.","One good day. Then another.","Discipline is choosing what you want most over what you want now.","Show up first. Motivation follows action.","No zero days.","You fall to the level of your systems.","The market pays the patient.","Protect the streak. Protect the capital.","Boredom is the price of consistency.","Slow is smooth. Smooth is fast.","Compound interest applies to habits too.","Your future self is watching today's choices.","Win the morning, win the day.","The loop breaks today, or it doesn't.","I am becoming a disciplined forex trader."];
+  var QUOTES=(S.quotes&&S.quotes.length)?QB.concat(S.quotes):QB;
   var box=document.getElementById('lbSplash'); if(!box){return;}
   var q=document.getElementById('lbSQ');
   var bar=document.getElementById('lbSB');
@@ -4034,5 +4039,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f64525fb1bb78b',t:'MTc5MDEzMjEyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
