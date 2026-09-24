@@ -1289,9 +1289,9 @@ function calBodies(){
   }}};
 }
 window.routDayDetail=function(dstr){
-  var D=S.done[dstr]||{}, all=allItems();
+  var D=S.done[dstr]||{}, all=activeItems();
   var dn=all.filter(function(i){return D[i.id];}).length, tot=all.length;
-  var groups=secList().map(function(g){
+  var groups=secList().filter(function(g){ return routKeys().indexOf(g.key)>=0; }).map(function(g){
     var l=S.checklist[g.key]||[]; if(!l.length)return '';
     return '<div class="pcsmall" style="margin-top:8px">'+g.name+'</div>'+l.map(function(i){
       var ok=!!D[i.id];
@@ -1301,13 +1301,13 @@ window.routDayDetail=function(dstr){
   openModal('<h3>📊 '+new Date(dstr+'T00:00:00').toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric'})+'</h3>'
     +(tot?'<div class="grid2"><div class="trade-card" style="text-align:center;padding:10px"><b style="font-size:20px;color:var(--accent)">'+dn+'</b><div class="muted" style="font-size:11px">routine complete</div></div>'
     +'<div class="trade-card" style="text-align:center;padding:10px"><b style="font-size:20px;color:#f87171">'+(tot-dn)+'</b><div class="muted" style="font-size:11px">routine not complete</div></div></div>':'')
-    +(tot?groups:'<div class="muted center" style="padding:8px 0">No routines recorded for this day.</div>')
+    +(tot?groups:'<div class="muted center" style="padding:8px 0">No recorded routines for this day.</div>')
     +'<div class="row"><button class="btn ghost" onclick="closeModal()">Close</button><button class="btn" onclick="openDay(\''+dstr+'\')">‹ Back to day</button></div>');
 };
 function openDay(dateStr){ window.evPendingNote='';
   const nice=new Date(dateStr+'T00:00:00').toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const ev=eventsOn(dateStr), note=S.notes[dateStr]||{text:'',mood:''}, hol=isHoliday(dateStr);
-  const ds=S.done[dateStr]||{}, items=allItems();
+  const ds=S.done[dateStr]||{}, items=activeItems();
   const dn=items.filter(function(i){return ds[i.id];}).length;
   const catOpts=Object.keys(CATS).map(function(k){return '<option value="'+k+'">'+CATS[k][1]+'</option>';}).join('');
   let evHtml=ev.map(function(e){
@@ -3665,7 +3665,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.5 ready';
+  if(mark)mark.textContent='\u2713 LB3.5.1 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -4079,5 +4079,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f8158368247a6b',t:'MTc5MDE1MTE0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fdabc97f6f3201',t:'MTc5MDIwOTcyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
