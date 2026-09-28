@@ -1320,8 +1320,13 @@ function openDay(dateStr){ window.evPendingNote='';
   const moods=['😞','😐','🙂','😄'].map(function(mo){
     return '<span style="cursor:pointer;font-size:18px;'+(note.mood===mo?'':'opacity:.35')+'" onclick="setMood(\''+dateStr+'\',\''+mo+'\')">'+mo+'</span>';
   }).join(' ');
+  var prevD=addDays(dateStr,-1), nextD=addDays(dateStr,1);
   openModal(
-    '<h3>'+nice+'</h3>'
+    '<div class="row" style="margin:0 0 8px;align-items:center;gap:6px">'
+    +'<button class="wctl" onclick="openDay(\''+prevD+'\')" title="Previous day" style="flex:0 0 auto;font-size:15px;padding:5px 11px">‹</button>'
+    +'<h3 style="flex:1;text-align:center;margin:0;font-size:16px">'+nice+'</h3>'
+    +'<button class="wctl" onclick="openDay(\''+nextD+'\')" title="Next day" style="flex:0 0 auto;font-size:15px;padding:5px 11px">›</button></div>'
+    +'<div id="dayScroll" style="max-height:64vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px">'
     +(hol?'<div class="banner" style="color:#fca5a5;border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.1)">🇵🇭 <b>'+esc(hol)+'</b></div>':'')
     +(items.length?'<div class="list-item" style="margin-bottom:10px;cursor:pointer" onclick="routDayDetail(\''+dateStr+'\')"><span style="flex:1">✅ <b>Routine that day: '+dn+'/'+items.length+' ('+Math.round(dn/items.length*100)+'%)</b> <span class="muted">— tap to see what was done</span></span><span class="muted">›</span></div>':'')
     +'<div class="section-title">Events / activities</div>'+evHtml
@@ -1337,8 +1342,20 @@ function openDay(dateStr){ window.evPendingNote='';
     +'<div class="row"><button class="btn ghost" id="evNoteChip" style="width:100%;text-align:left" onclick="evNoteNew()">📝 Add a note (optional)</button></div>'
     +'<div class="section-title">Notes / journal — mood: '+moods+'</div>'
     +'<textarea id="dayNote" placeholder="What did you do today that your future self will thank you for?">'+esc(note.text)+'</textarea>'
-    +'<div class="row"><button class="btn" onclick="saveNote2(\''+dateStr+'\')">Save note</button>'
+    +'</div>'
+    +'<div class="row" style="margin-top:8px"><button class="btn" onclick="saveNote2(\''+dateStr+'\')">Save note</button>'
     +'<button class="btn ghost" onclick="closeModal()">Close</button></div>');
+  (function(){
+    var sc=document.getElementById('dayScroll'); if(!sc)return;
+    var tx0=null,ty0=null;
+    sc.addEventListener('touchstart',function(e){ if(e.touches.length===1){ tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; } },{passive:true});
+    sc.addEventListener('touchend',function(e){
+      if(tx0===null)return;
+      var t2=e.changedTouches[0]; var dx=t2.clientX-tx0, dy=t2.clientY-ty0; tx0=null;
+      if(Math.abs(dx)>70&&Math.abs(dx)>2*Math.abs(dy)){ openDay(addDays(dateStr,dx<0?1:-1)); }
+    },{passive:true});
+    sc.addEventListener('touchcancel',function(){ tx0=null; },{passive:true});
+  })();
 }
 window.addEvent2=function(dateStr){
   const v=document.getElementById('evTitle').value.trim(); if(!v)return;
@@ -3665,7 +3682,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.5.1 ready';
+  if(mark)mark.textContent='\u2713 LB3.5.2 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -4079,5 +4096,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fdabc97f6f3201',t:'MTc5MDIwOTcyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
