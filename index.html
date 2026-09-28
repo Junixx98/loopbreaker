@@ -278,7 +278,7 @@ body.light .wmap{background:#dfe8f5}
 </style>
 <style id="lbEvCss">.evNoteView{background:var(--card2);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:10px;max-height:38vh;overflow:auto;font-size:14.5px;line-height:1.55;word-wrap:break-word}.evNoteView img{max-width:100%;border-radius:8px}.evNoteView .ntask{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.evNoteView input[type="checkbox"]{accent-color:var(--accent);margin-top:3px}</style>
 <style id="lbCfrmCss">.cfrm{text-align:center;animation:cfrmPop .18s ease}.cfrmIc{font-size:36px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 4px 14px rgba(239,68,68,.35))}.cfrmT{font-weight:800;font-size:17px;margin-top:4px}.cfrmM{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.55;white-space:pre-line;word-wrap:break-word}@keyframes cfrmPop{from{transform:scale(.9) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}</style>
-<style id="lbCal2Css">.day{min-height:86px}.day .num{font-size:11px;opacity:.8}.evchip{display:block;font-size:10.5px;line-height:1.25;font-weight:600;padding:2px 5px;margin-top:3px;border-radius:5px;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}</style>
+<style id="lbCal2Css">.day{min-height:96px}.day .num{font-size:11px;opacity:.8;display:block;position:relative;z-index:2}.dchips{position:absolute;top:16px;left:0;right:0;bottom:0;overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 4px 3px 4px;scrollbar-width:none}.dchips::-webkit-scrollbar{display:none}.dchips .chip,.dchips .evchip{width:max-content;min-width:100%}.evchip{display:block;font-size:10.5px;line-height:1.25;font-weight:600;padding:2px 5px;margin-top:3px;border-radius:5px;color:var(--text);cursor:pointer;white-space:nowrap}</style>
 <style id="lbChartCss">.daychart{width:100%;height:70px;display:block;margin-top:4px}.lgdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}</style>
 </head>
 <body class="dark">
@@ -1241,13 +1241,11 @@ function calBodies(){
         if(comp>0)cls+=' h'+(comp>=1?4:comp>=.75?3:comp>=.5?2:1);
         let chips='';
         if(hol)chips+='<span class="chip" style="background:#ef4444">🇵🇭 '+esc(hol)+'</span>';
-        ev.slice(0,hol?1:2).forEach(function(e){ var cc=catDot(e.cat); chips+='<span class="evchip" onclick="event.stopPropagation();evDetail(\''+e.id+'\',\''+ds+'\')" style="background:'+cc[0]+'29;border-left:3px solid '+cc[0]+'">'+(e.allDay?'☀️ ':(e.start?e.start+' · ':''))+esc(e.title)+'</span>'; });
-        const more=(ev.length-(hol?2:3));
-        if(more>0)chips+='<span class="chip" style="background:var(--card3);color:var(--muted)">+'+more+' more</span>';
+        ev.forEach(function(e){ var cc=catDot(e.cat); chips+='<span class="evchip" onclick="event.stopPropagation();evDetail(\''+e.id+'\',\''+ds+'\')" style="background:'+cc[0]+'29;border-left:3px solid '+cc[0]+'">'+(e.allDay?'☀️ ':(e.start?e.start+' · ':''))+esc(e.title)+'</span>'; });
         if(note&&note.mood)chips+='<span class="chip" style="background:transparent;padding:0">'+note.mood+'</span>';
-        html+='<div class="'+cls+'" data-date="'+ds+'"><span class="num">'+d+'</span>'+chips+'</div>';
+        html+='<div class="'+cls+'" data-date="'+ds+'"><span class="num">'+d+'</span><div class="dchips">'+chips+'</div></div>';
       }
-      html+='</div><div class="muted" style="margin-top:8px;font-size:11px">Tap a day to open it. Green bar under a day = routine done. Legend: 🔵 Personal · 🟣 School · 🟠 Work · 🟢 Trading · 🟡 Money · 🔴 News · 🇵🇭 Holiday</div>';
+      html+='</div><div class="muted" style="margin-top:8px;font-size:11px">Tap a day to open it. Inside a day box: scroll ↓ for more events, swipe a name → for the full title. Green bar = routine done. Legend: 🔵 Personal · 🟣 School · 🟠 Work · 🟢 Trading · 🟡 Money · 🔴 News · 🇵🇭 Holiday</div>';
     } else {
       const base=new Date(calCursor); const dow=base.getDay();
       const wk0=todayStr(new Date(base.getFullYear(),base.getMonth(),base.getDate()-dow));
@@ -3682,7 +3680,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.5.2 ready';
+  if(mark)mark.textContent='\u2713 LB3.5.3 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -4096,5 +4094,6 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a423ab5e98af09d8',t:'MTc5MDYwODE2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
