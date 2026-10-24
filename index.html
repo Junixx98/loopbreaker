@@ -612,7 +612,7 @@ function tickSleepBoxes(){
 }
 // ================= WIDGET ENGINE =================
 const WTABS={
-  today:[{id:'wid',t:'Identity',ic:'target'},{id:'tstats',t:'Today at a glance',ic:'chart'},{id:'todo',t:'To Do',ic:'check'},{id:'goals',t:'Goals',ic:'target'},{id:'ttime',t:'Focus Timer',ic:'clock'},{id:'tsleep',t:'Sleep Tracker',ic:'moon'},{id:'tcd',t:'Countdown',ic:'calendar'},{id:'tnext',t:'Next up',ic:'target'}],
+  today:[{id:'wid',t:'Identity',ic:'target'},{id:'tstats',t:"TODAY'S GLANCE",ic:'chart'},{id:'todo',t:'To Do',ic:'check'},{id:'goals',t:'Goals',ic:'target'},{id:'ttime',t:'Focus Timer',ic:'clock'},{id:'tsleep',t:'Sleep Tracker',ic:'moon'},{id:'tcd',t:'Countdown',ic:'calendar'},{id:'tnext',t:'Next up',ic:'target'}],
   notes:[{id:'nmain',t:'Notes',ic:'note'}],
   cal:[{id:'calmain',t:'Calendar',ic:'calendar'}],
   routine:[{id:'rmain',t:'Routines',ic:'check'},{id:'weekrings',t:'Weekly Rings',ic:'chart'}],
@@ -838,22 +838,22 @@ function todayBodies(){
       var dlbl=st?('\u2705 Day started \u00b7 '+new Date(st).toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'})):'\ud83c\udf05 START MY DAY';
       var evT=eventsOn(t).slice().sort(function(a,b){return (a.start||'99').localeCompare(b.start||'99');});
       var evRows=evT.length?evT.map(function(e){ var cc=catDot(e.cat);
-          return '<div class="list-item" style="padding:4px 0"><span class="sw" style="background:'+cc[0]+'"></span><span style="flex:1;cursor:pointer;font-size:12.5px" onclick="evDetail(\''+e.id+'\',\''+t+'\')">'+esc(e.title)+(e.start?' <span class="muted">'+e.start+'</span>':'')+'</span></div>'; }).join('')
-        :'<div class="muted" style="font-size:11px;padding:2px 0">No events today.</div>';
+          return '<div class="list-item" style="padding:5px 0"><span class="sw" style="background:'+cc[0]+'"></span><span style="flex:1;cursor:pointer;font-size:14px" onclick="evDetail(\''+e.id+'\',\''+t+'\')">'+esc(e.title)+(e.start?' <span class="muted" style="font-size:12px">'+e.start+'</span>':'')+'</span></div>'; }).join('')
+        :'<div style="font-size:13px;opacity:.75;padding:3px 0">No events today.</div>';
       var cd=(S.events2||[]).filter(function(e){ return e.inCd!==false&&e.date>=t; }).map(function(e){ return {id:e.id,date:e.date,title:e.title}; })
         .concat((S.countdowns||[]).map(function(c){ return {id:c.id,date:c.date,title:c.title}; }))
         .sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
       var cdTxt=cd.length?(function(){ var c=cd[0]; var dd=Math.ceil((new Date(c.date+'T00:00:00')-new Date(t+'T00:00:00'))/86400000);
-          return '<b style="color:var(--accent2)">'+dd+'</b> day'+(dd===1?'':'s')+' \u2014 '+esc(c.title); })():'<span class="muted">None yet.</span>';
+          return '<b style="color:var(--accent2);font-size:17px">'+dd+'</b> day'+(dd===1?'':'s')+' \u2014 '+esc(c.title); })():'<span style="opacity:.75">None yet.</span>';
       var news=evT.filter(function(e){ return e.cat==='news'; });
       if(!news.length){ var up=(S.events2||[]).filter(function(e){ return e.cat==='news'&&e.date>t&&e.date<=addDays(t,7); }).sort(function(a,b){ return a.date<b.date?-1:1; }); if(up.length)news=[up[0]]; }
-      var newsTxt=news.length?news.map(function(e){ return esc(e.title)+' <span class="muted">'+(e.date===t?'today':e.date)+'</span>'; }).join(' · '):'<span class="muted">No news pins.</span>';
+      var newsTxt=news.length?news.map(function(e){ return esc(e.title)+' <span class="muted">'+(e.date===t?'today':e.date)+'</span>'; }).join(' · '):'<span style="opacity:.75">No news pins.</span>';
       let html='<div id="backupBanner"></div>'
         +'<button class="btn '+(st?'ghost':'')+'" onclick="dayStartTap()" style="width:100%;margin-bottom:8px;font-weight:800;letter-spacing:1px;font-size:15px;'+(st?'color:var(--accent)':'background:var(--accent);color:#08130c')+'">'+dlbl+'</button>'
-        +'<div class="muted" style="font-size:10.5px;margin:-4px 0 8px">Marks Routine \u00b7 To Do \u00b7 Sleep as started \u2014 unfinished ones turn red in the charts until done.</div>'
-        +'<div class="pcsmall">\ud83d\udcc5 Today\u2019s events</div>'+evRows
-        +'<div class="pcsmall" style="margin-top:6px">\u23f3 Next countdown</div><div style="font-size:13px;padding:2px 0">'+cdTxt+'</div>'
-        +'<div class="pcsmall" style="margin-top:6px">\ud83d\udcf0 News pins</div><div style="font-size:13px;padding:2px 0">'+newsTxt+'</div>'
+        +'<div class="muted" style="font-size:11px;margin:-4px 0 10px;color:var(--text);opacity:.75">Marks Routine \u00b7 To Do \u00b7 Sleep as started \u2014 unfinished ones turn red in the charts until done.</div>'
+        +'<div style="font-size:12.5px;font-weight:800;letter-spacing:.5px;color:var(--accent);opacity:.95">\ud83d\udcc5 TODAY\u2019S EVENTS</div>'+evRows
+        +'<div style="font-size:12.5px;font-weight:800;letter-spacing:.5px;color:var(--accent);opacity:.95;margin-top:8px">\u23f3 NEXT COUNTDOWN</div><div style="font-size:14.5px;padding:3px 0">'+cdTxt+'</div>'
+        +'<div style="font-size:12.5px;font-weight:800;letter-spacing:.5px;color:var(--accent);opacity:.95;margin-top:8px">\ud83d\udcf0 NEWS PINS</div><div style="font-size:14.5px;padding:3px 0">'+newsTxt+'</div>'
         +'<div class="grid3" style="margin-top:10px">'
         +stat(pct+'%','Routine today')+stat('🔥'+bestStreak(),'Best streak')+stat(S.pomo[t]||0,'Focus sessions')+'</div>';
       if(!S.lastBackup||Date.now()-S.lastBackup>7*864e5){
@@ -3721,7 +3721,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.6.4 ready';
+  if(mark)mark.textContent='\u2713 LB3.6.5 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -4135,5 +4135,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fccd765c5e5240',t:'MTc5Mjg4NDk3NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
