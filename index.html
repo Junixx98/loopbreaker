@@ -96,7 +96,7 @@ nav button{flex:1;background:none;border:none;color:var(--muted);padding:9px 2px
 .mdot.picked{border-color:var(--accent);color:var(--accent)}
 .tFocus{position:fixed;inset:0;background:var(--bg);z-index:160;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center}
 .tFocus.on{display:flex}
-.tfDisp{font-size:92px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:2px}
+.tfDisp{font-size:min(33vw,40vmin,430px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:2px}
 .tfLbl{color:var(--muted);font-size:14px;letter-spacing:1px}
 .tfRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .neBody ul,.neBody ol{padding-left:26px;margin:6px 0}
@@ -538,6 +538,8 @@ function reconcSections(){
   S.routMulti=(S.routMulti||[]).filter(function(k){ return secList().some(function(g){return g.key===k;}); });
   if(!S.tomb||typeof S.tomb!=='object'||Array.isArray(S.tomb))S.tomb={};
   (function(){ var cut=Date.now()-90*864e5; for(var tk in S.tomb){ if(S.tomb[tk]<cut)delete S.tomb[tk]; } })();
+  if(!S.dayStart||typeof S.dayStart!=='object'||Array.isArray(S.dayStart))S.dayStart={};
+  (function(){ var cut=Date.now()-90*864e5; for(var dk in S.dayStart){ if(S.dayStart[dk]<cut)delete S.dayStart[dk]; } })();
   if(S.widgets&&typeof S.widgets==='object'){ Object.keys(S.widgets).forEach(function(tk2){ var wc=S.widgets[tk2]&&S.widgets[tk2].cfg; if(!wc)return; Object.keys(wc).forEach(function(ck){ if(wc[ck]&&wc[ck].fw)delete wc[ck].fw; }); }); }
 
   if(!S.sgoal||typeof S.sgoal!=='object'||Array.isArray(S.sgoal))S.sgoal={target:0,saved:0,wins:[]};
@@ -799,6 +801,22 @@ function lbChime(long){ try{ var C=window.AudioContext||window.webkitAudioContex
 function lbNotify(txt){ try{ if(window.Notification&&Notification.permission==='granted')new Notification('LoopBreaker ⏰',{body:txt}); }catch(e){} }
 function tfOpen(on){ var f=document.getElementById('tFocus'); if(f)f.classList.toggle('on',!!on); }
 function tfSync(){ var sb=document.getElementById('btnTimerStart'),ts=document.getElementById('tfStart'); if(sb&&ts)ts.textContent=sb.textContent; }
+window.dayStartTap=function(){
+  var t=todayStr(); S.dayStart=S.dayStart||{};
+  if(!S.dayStart[t]){ S.dayStart[t]=Date.now(); save(); renderAll(); buzz(); uiToast('\ud83c\udf05 Day started \u2014 now go finish everything!'); }
+  else uiToast('Today was already marked started \u2714');
+  tfDaySync();
+};
+function tfDaySync(){
+  var b=document.getElementById('tfDayStart'),n=document.getElementById('tfDayNote'); if(!b)return;
+  b=n=null; return;
+  var t=todayStr(), st=S.dayStart&&S.dayStart[t];
+  if(st){ var tm=new Date(st).toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'});
+    b.innerHTML='✅ Day started · '+tm; b.style.opacity='.75'; b.style.borderColor='rgba(34,197,94,.5)'; b.style.background='rgba(34,197,94,.10)';
+    if(n)n.textContent='Today is marked as started — whatever stays unfinished will show red in Routine · To Do · Sleep until done.';
+  } else { b.innerHTML='🌅 START MY DAY'; b.style.opacity='1'; b.style.borderColor='var(--accent)'; b.style.background='linear-gradient(135deg,rgba(34,197,94,.18),rgba(251,191,36,.12))';
+    if(n)n.textContent="Marks today's Routine · To Do · Sleep as started — unfinished ones then show red in the progress charts until you finish them."; }
+}
 function tDisp(){ const m=Math.floor(tLeft/60), s=tLeft%60; const str=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); const e=document.getElementById('timerDisp'); if(e)e.textContent=str; var f=document.getElementById('tfDisp'); if(f)f.textContent=str; tfSync(); }
 function todayBodies(){
   return {
@@ -816,7 +834,27 @@ function todayBodies(){
       const t=todayStr(), items=allItems(), ds=S.done[t]||{};
       const dn=items.filter(function(i){return ds[i.id];}).length;
       const pct=items.length?Math.round(dn/items.length*100):0;
-      let html='<div id="backupBanner"></div><div class="grid3">'
+      var st=S.dayStart&&S.dayStart[t];
+      var dlbl=st?('\u2705 Day started \u00b7 '+new Date(st).toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'})):'\ud83c\udf05 START MY DAY';
+      var evT=eventsOn(t).slice().sort(function(a,b){return (a.start||'99').localeCompare(b.start||'99');});
+      var evRows=evT.length?evT.map(function(e){ var cc=catDot(e.cat);
+          return '<div class="list-item" style="padding:4px 0"><span class="sw" style="background:'+cc[0]+'"></span><span style="flex:1;cursor:pointer;font-size:12.5px" onclick="evDetail(\''+e.id+'\',\''+t+'\')">'+esc(e.title)+(e.start?' <span class="muted">'+e.start+'</span>':'')+'</span></div>'; }).join('')
+        :'<div class="muted" style="font-size:11px;padding:2px 0">No events today.</div>';
+      var cd=(S.events2||[]).filter(function(e){ return e.inCd!==false&&e.date>=t; }).map(function(e){ return {id:e.id,date:e.date,title:e.title}; })
+        .concat((S.countdowns||[]).map(function(c){ return {id:c.id,date:c.date,title:c.title}; }))
+        .sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+      var cdTxt=cd.length?(function(){ var c=cd[0]; var dd=Math.ceil((new Date(c.date+'T00:00:00')-new Date(t+'T00:00:00'))/86400000);
+          return '<b style="color:var(--accent2)">'+dd+'</b> day'+(dd===1?'':'s')+' \u2014 '+esc(c.title); })():'<span class="muted">None yet.</span>';
+      var news=evT.filter(function(e){ return e.cat==='news'; });
+      if(!news.length){ var up=(S.events2||[]).filter(function(e){ return e.cat==='news'&&e.date>t&&e.date<=addDays(t,7); }).sort(function(a,b){ return a.date<b.date?-1:1; }); if(up.length)news=[up[0]]; }
+      var newsTxt=news.length?news.map(function(e){ return esc(e.title)+' <span class="muted">'+(e.date===t?'today':e.date)+'</span>'; }).join(' · '):'<span class="muted">No news pins.</span>';
+      let html='<div id="backupBanner"></div>'
+        +'<button class="btn '+(st?'ghost':'')+'" onclick="dayStartTap()" style="width:100%;margin-bottom:8px;font-weight:800;letter-spacing:1px;font-size:15px;'+(st?'color:var(--accent)':'background:var(--accent);color:#08130c')+'">'+dlbl+'</button>'
+        +'<div class="muted" style="font-size:10.5px;margin:-4px 0 8px">Marks Routine \u00b7 To Do \u00b7 Sleep as started \u2014 unfinished ones turn red in the charts until done.</div>'
+        +'<div class="pcsmall">\ud83d\udcc5 Today\u2019s events</div>'+evRows
+        +'<div class="pcsmall" style="margin-top:6px">\u23f3 Next countdown</div><div style="font-size:13px;padding:2px 0">'+cdTxt+'</div>'
+        +'<div class="pcsmall" style="margin-top:6px">\ud83d\udcf0 News pins</div><div style="font-size:13px;padding:2px 0">'+newsTxt+'</div>'
+        +'<div class="grid3" style="margin-top:10px">'
         +stat(pct+'%','Routine today')+stat('🔥'+bestStreak(),'Best streak')+stat(S.pomo[t]||0,'Focus sessions')+'</div>';
       if(!S.lastBackup||Date.now()-S.lastBackup>7*864e5){
         html+='<div class="banner" style="margin-top:10px;margin-bottom:0">💾 <b>Backup reminder:</b> it\u2019s been a week+. Export your data in More → Backup.</div>';
@@ -943,6 +981,7 @@ function todayBodies(){
       var tfs=document.getElementById('tfStart'); if(tfs)tfs.onclick=function(){ var sb=document.getElementById('btnTimerStart'); if(sb)sb.click(); tfSync(); };
       var tfr=document.getElementById('tfReset'); if(tfr)tfr.onclick=function(){ var rb=document.getElementById('btnTimerReset'); if(rb)rb.click(); };
       var tfe=document.getElementById('tfExit'); if(tfe)tfe.onclick=function(){ tfOpen(false); };
+
       var tde=document.getElementById('timerDisp'); if(tde){ tde.style.cursor='pointer'; tde.onclick=function(){ if(tRun)tfOpen(true); }; }
     }},
     tsleep:{ b:function(){
@@ -1042,9 +1081,9 @@ S.sleepDraft={bed:null,wake:null}; save(); renderAll();
         +'<div class="row" style="margin:10px 0 0;align-items:center"><div class="pcsmall" style="flex:1">Completed — '+(S.todoRange==='month'?'last 30 days':(S.todoRange==='yearly'?'last 12 months':'last 7 days'))+'</div>'
         +mkPick('todoRg','📊 Progress range','TRANGE',S.todoRange,S.todoRange==='month'?'🗓️ Monthly':(S.todoRange==='yearly'?'🎆 Yearly':'📅 Weekly'))+'</div>'
         +(function(){ function pc2(a){ return a&&a.length?Math.round(a.filter(function(i){return i.done;}).length/a.length*100):0; }
-          function pm2(d3){ return (S.todo[d3]&&S.todo[d3].length)?100-pc2(S.todo[d3]):0; }
+          function pm2(d3){ return (S.todo[d3]&&S.todo[d3].length&&S.dayStart&&S.dayStart[d3])?100-pc2(S.todo[d3]):0; }
           if(S.todoRange==='month'){ var vals=[]; for(var i=29;i>=0;i--){ var d2=addDays(todayStr(),-i); vals.push({v:pc2(S.todo[d2]),m:pm2(d2),l:d2.slice(8)}); } return barChart(vals,100); }
-          if(S.todoRange==='yearly'){ var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; var now=new Date(); var vals2=[]; for(var m=11;m>=0;m--){ var dt=new Date(now.getFullYear(),now.getMonth()-m,1); var key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'); var tot=0,dn=0; Object.keys(S.todo).forEach(function(k){ if(k.slice(0,7)===key){ (S.todo[k]||[]).forEach(function(it){ tot++; if(it.done)dn++; }); } }); var tv=tot?Math.round(dn/tot*100):0; vals2.push({v:tv,m:tot?100-tv:0,l:MN[dt.getMonth()]}); } return barChart(vals2,100); }
+          if(S.todoRange==='yearly'){ var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; var now=new Date(); var vals2=[]; for(var m=11;m>=0;m--){ var dt=new Date(now.getFullYear(),now.getMonth()-m,1); var key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'); var tot=0,dn=0; Object.keys(S.todo).forEach(function(k){ if(k.slice(0,7)===key){ (S.todo[k]||[]).forEach(function(it){ tot++; if(it.done)dn++; }); } }); var tv=tot?Math.round(dn/tot*100):0; var totM=0,cntM=0; Object.keys(S.todo).forEach(function(tk3){ if(tk3.slice(0,7)===key&&S.dayStart&&S.dayStart[tk3]&&S.todo[tk3]&&S.todo[tk3].length){ totM+=(100-pc2(S.todo[tk3])); cntM++; } }); vals2.push({v:tv,m:cntM?Math.round(totM/cntM):0,l:MN[dt.getMonth()]}); } return barChart(vals2,100); }
           return barChart(last7Labels().map(function(x){ return {v:pc2(S.todo[x.d]),m:pm2(x.d),l:x.l}; }),100);
         })();
     }, bind:function(){
@@ -1445,13 +1484,14 @@ function routineBodies(){
       +'<div class="bar"><i style="width:'+pct+'%"></i></div></div>';
     html+='<div class="row" style="margin:10px 0 0;align-items:center"><div class="pcsmall" style="flex:1">Routine completion — '+(S.routRange==='month'?'last 30 days':(S.routRange==='yearly'?'last 12 months':'last 7 days'))+'</div>'
       +mkPick('routRg','📊 Progress range','TRANGE',S.routRange,S.routRange==='month'?'🗓️ Monthly':(S.routRange==='yearly'?'🎆 Yearly':'📅 Weekly'))+'</div>'
-      +(function(){ function pv(d){ return Math.round(dayCompletion(d)*100); } function pm(d){ return activeItems().length?100-pv(d):0; }
+      +(function(){ function pv(d){ return Math.round(dayCompletion(d)*100); } function pm(d){ return (activeItems().length&&S.dayStart&&S.dayStart[d])?100-pv(d):0; }
         if(S.routRange==='month'){ var a=[]; for(var i=29;i>=0;i--){ var d2=addDays(todayStr(),-i); a.push({v:pv(d2),m:pm(d2),l:d2.slice(8)}); } return barChart(a,100,'rb'); }
         if(S.routRange==='yearly'){ var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; var now=new Date(),b=[];
-          for(var m=11;m>=0;m--){ var dt=new Date(now.getFullYear(),now.getMonth()-m,1); var key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'); var tot=0,cnt=0;
-            for(var dd=1;dd<=31;dd++){ var dstr=key+'-'+String(dd).padStart(2,'0'); if(dstr>todayStr())break; tot+=pv(dstr);cnt++; }
+          for(var m=11;m>=0;m--){ var dt=new Date(now.getFullYear(),now.getMonth()-m,1); var key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'); var tot=0,cnt=0,totM=0,cntM=0;
+            for(var dd=1;dd<=31;dd++){ var dstr=key+'-'+String(dd).padStart(2,'0'); if(dstr>todayStr())break; tot+=pv(dstr);cnt++;
+              if(S.dayStart&&S.dayStart[dstr]){ totM+=(100-pv(dstr)); cntM++; } }
             var mv=cnt?Math.round(tot/cnt):0;
-            b.push({v:mv,m:(cnt&&activeItems().length)?100-mv:0,l:MN[dt.getMonth()]}); }
+            b.push({v:mv,m:(cntM&&activeItems().length)?Math.round(totM/cntM):0,l:MN[dt.getMonth()]}); }
           return barChart(b,100); }
         return barChart(last7Labels().map(function(x){return {v:pv(x.d),m:pm(x.d),l:x.l};}),100,'rb');
       })()
@@ -2762,13 +2802,14 @@ function dayChart(vals,maxv){
 }
 function sleepChart(){
   function hrs(d){ const r=S.sleep.filter(function(z){return z.date===d;}); return r.length?Math.round(r[r.length-1].hours*10)/10:0; }
-  if(S.sleepRange==='month'){ var a=[]; for(var i=29;i>=0;i--){ var d2=addDays(todayStr(),-i); a.push({v:hrs(d2),l:d2.slice(8)}); } return barChart(a,12); }
+  function sm(d){ return (S.dayStart&&S.dayStart[d]&&!hrs(d))?12:0; }
+  if(S.sleepRange==='month'){ var a=[]; for(var i=29;i>=0;i--){ var d2=addDays(todayStr(),-i); a.push({v:hrs(d2),m:sm(d2),l:d2.slice(8)}); } return barChart(a,12); }
   if(S.sleepRange==='yearly'){ var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; var now=new Date(),b=[];
     for(var m=11;m>=0;m--){ var dt=new Date(now.getFullYear(),now.getMonth()-m,1); var key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'); var sum=0,cnt=0;
       S.sleep.forEach(function(z){ if((z.date||'').slice(0,7)===key){ sum+=z.hours; cnt++; } });
       b.push({v:cnt?Math.round(sum/cnt*10)/10:0,l:MN[dt.getMonth()]}); }
     return barChart(b,12); }
-  return barChart(last7Labels().map(function(x){ return {v:hrs(x.d),l:x.l}; }),12);
+  return barChart(last7Labels().map(function(x){ return {v:hrs(x.d),m:sm(x.d),l:x.l}; }),12);
 }
 function mlineBuild(mo){
   var base=new Date(mo+'-01T00:00:00');
@@ -3680,7 +3721,7 @@ function boot(){
   })();
   try{ lbTimerCatch(); }catch(e){}
   var mark=document.getElementById('integrityMark');
-  if(mark)mark.textContent='\u2713 LB3.5.3 ready';
+  if(mark)mark.textContent='\u2713 LB3.6.4 ready';
   try{ localStorage.setItem('__lbprobe','1'); localStorage.removeItem('__lbprobe'); }catch(e){ setTimeout(function(){ try{ uiToast('⚠️ Storage is blocked in this preview window — nothing will be remembered. Install the app instead.'); }catch(_){}; },1600); }
 }
 try{ boot(); }catch(e){ showFatal(e.message); }
@@ -4094,6 +4135,5 @@ window.LBSYNC={pullNow:pullNow,pushNow:pushNow,cfg:function(){return JSON.parse(
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a423ab5e98af09d8',t:'MTc5MDYwODE2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fccd765c5e5240',t:'MTc5Mjg4NDk3NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
